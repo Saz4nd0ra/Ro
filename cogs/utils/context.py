@@ -52,6 +52,4 @@ class Context(commands.Context):
             title=f"{self.prefix}{self.command.qualified_name}",
             description=message,
         )
-        await self.send(
-            embed=embed
-        )
+        await self.send(embed=embed)

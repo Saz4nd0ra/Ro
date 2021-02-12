@@ -6,6 +6,7 @@ from .utils.embed import Embed
 
 class NSFW(commands.Cog):
     """Commands for degenerates. Please stick to the rules."""
+
     def __init__(self, bot):
         self.bot = bot
         self.config = self.bot.config
