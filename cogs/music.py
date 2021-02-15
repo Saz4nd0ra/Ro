@@ -6,7 +6,6 @@ import asyncio
 import datetime as dt
 import random
 import re
-import typing as t
 from enum import Enum
 from .utils.embed import Embed
 from .utils.context import Context
@@ -295,7 +294,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         await ctx.embed("Disconnected.")
 
     @commands.command(name="play", aliases=["p"])
-    async def play_command(self, ctx, *, query: t.Optional[str]):
+    async def play_command(self, ctx, *, query: str):
         player = self.get_player(ctx)
 
         if not player.is_connected:
@@ -402,7 +401,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         await ctx.embed(f"The repeat mode has been set to {mode}.")
 
     @commands.command(name="queue", aliases=["q"])
-    async def queue_command(self, ctx, show: t.Optional[int] = 25):
+    async def queue_command(self, ctx, show: int = 25):
         player = self.get_player(ctx)
 
         if player.queue.is_empty:
@@ -445,17 +444,17 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         if player.queue.is_empty:
             raise QueueIsEmpty
 
-        if not player.queue.upcoming[entry - 1]:
+        if not player.queue._queue[entry - 1]:
             raise InvalidQueueEntry
 
-        if not player.queue.upcoming[new_position -1]:
+        if not player.queue._queue[new_position -1]:
             raise InvalidQueuePosition
 
-        tmp = player.queue.upcoming[new_position - 1]
+        tmp = player.queue._queue[new_position - 1]
 
-        player.queue.upcoming[new_position - 1] = player.queue.upcoming[entry - 1]
+        player.queue._queue[new_position - 1] = player.queue._queue[entry - 1]
 
-        player.queue.upcoming[entry - 1] = tmp
+        player.queue._queue[entry - 1] = tmp
 
         await ctx.embed("Song successfully moved.")
 
