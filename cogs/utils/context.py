@@ -44,6 +44,7 @@ class Context(commands.Context):
             delete_after=auto_delete if auto_delete else auto_delete is None,
         )
         await self.send(embed=embed)
+        print(f"An error occured:{message}; User: {self.message.author}")
 
     async def embed(self, message: str):
         """Sends a quick embed."""
