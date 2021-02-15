@@ -275,7 +275,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
             return self.wavelink.get_player(obj.id, cls=Player)
 
     @commands.command(name="connect", aliases=["join"])
-    async def connect_command(self, ctx, *, channel: t.Optional[discord.VoiceChannel]):
+    async def connect_command(self, ctx, *, channel: discord.VoiceChannel):
         player = self.get_player(ctx)
         channel = await player.connect(ctx, channel)
         await ctx.embed(f"Connected to {channel.name}.")
