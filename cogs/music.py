@@ -448,7 +448,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         if not player.queue.upcoming[entry - 1]:
             raise InvalidQueueEntry
 
-        if not player.queue.upcoming[new_position -1]
+        if not player.queue.upcoming[new_position -1]:
             raise InvalidQueuePosition
 
         tmp = player.queue.upcoming[new_position - 1]
