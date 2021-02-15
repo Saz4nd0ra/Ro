@@ -164,22 +164,18 @@ class Music(commands.Cog):
         return controller
 
     @commands.command()
-    async def join(self, ctx, *, voice_channel):
+    async def join(self, ctx, *, channel=None):
         """Invites bot to channel."""
-        if not voice_channel:
-            try:
-                voice_channel = ctx.author.voice.channel
-            except AttributeError:
-                return await ctx.send(
-                    "Please specify a channel to join...", delete_after=10
-                )
+        channel = getattr(ctx.author.voice, "channel", channel)
+        if channel is None:
+            return await ctx.error("No channel provided!")
 
         controller = self.get_controller(ctx)
         controller.channel = ctx.message.channel
 
         player = self.bot.wavelink.get_player(ctx.guild.id)
-        await ctx.embed(f"Connecting to **{voice_channel.name}**")
-        await player.connect(voice_channel.id)
+        await ctx.embed(f"Connecting to **{channel.name}**")
+        await player.connect(channel.id)
 
     @commands.command(aliases=["s", "disconnect"])
     async def stop(self, ctx):
@@ -312,21 +308,15 @@ class Music(commands.Cog):
         await player.stop()
 
     @commands.command()
-    async def volume(self, ctx, *, direction: str):
+    async def volume(self, ctx, *, vol: int):
         """Adjust music volume."""
-        if direction != "up" and direction != "down":
-            await ctx.send("Invalid volume input...")
-            return
+
+        if not 0 < vol < 101:
+            return await ctx.error("Please enter a value between 1 and 100.")
 
         player = self.bot.wavelink.get_player(ctx.guild.id)
         controller = self.get_controller(ctx)
-        if direction == "up":
-            controller.volume *= 2
-        elif direction == "down":
-            controller.volume //= 2
-
-        clamp = lambda v, min_v, max_v: max(min(max_v, v), min_v)
-        controller.volume = clamp(controller.volume, 1, 200)
+        controller.volume = vol
 
         await ctx.send(f"Setting player volume to {controller.volume}", delete_after=10)
         await player.set_volume(controller.volume)
@@ -345,7 +335,7 @@ class Music(commands.Cog):
 
         await ctx.send(f"Now playing: **{player.current}**")
 
-    @commands.command(aliases=["queue"])
+    @commands.command(aliases=["q"])
     async def queue(self, ctx):
         """Returns song queue info."""
         player = self.bot.wavelink.get_player(ctx.guild.id)
@@ -384,7 +374,9 @@ class Music(commands.Cog):
     async def move(self, ctx, entry: int, new_position: int):
         """Move a queue entry to a new position."""
 
-        player = self.bot.wavelink.get_player(guild_id=ctx.guild.id, cls=Player, context=ctx)
+        player = self.bot.wavelink.get_player(
+            guild_id=ctx.guild.id, cls=Player, context=ctx
+        )
 
         if not player.is_connected:
             return
