@@ -139,6 +139,10 @@ class Player(wavelink.Player):
         super().__init__(*args, **kwargs)
         self.queue = Queue()
 
+        self.context = kwargs.get("context", None)
+        if self.context:
+            self.dj = self.context.author
+
     async def connect(self, ctx, channel=None):
         if self.is_connected:
             raise AlreadyConnectedToChannel
@@ -161,6 +165,10 @@ class Player(wavelink.Player):
 
         if isinstance(tracks, wavelink.TrackPlaylist):
             self.queue.add(*tracks.tracks)
+            await ctx.embed(
+                f'`Added the playlist {tracks.data["playlistInfo"]["name"]}'
+                f" with {len(tracks.tracks)} songs to the queue.\n`"
+            )
         elif len(tracks) == 1:
             self.queue.add(tracks[0])
             await ctx.embed(f"Added {tracks[0].title} to the queue.")
@@ -341,7 +349,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         player = self.get_player(ctx)
         player.queue.empty()
         await player.stop()
-        await ctx.error("Playback stopped.")
+        await ctx.embed("Playback stopped.")
 
     @commands.command(name="next", aliases=["skip", "s"])
     async def next_command(self, ctx):
