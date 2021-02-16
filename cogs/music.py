@@ -25,35 +25,46 @@ OPTIONS = {
 class AlreadyConnectedToChannel(commands.CommandError):
     pass
 
+
 class NoVoiceChannel(commands.CommandError):
     pass
+
 
 class QueueIsEmpty(commands.CommandError):
     pass
 
+
 class NoTracksFound(commands.CommandError):
     pass
+
 
 class PlayerIsAlreadyPaused(commands.CommandError):
     pass
 
+
 class PlayerIsNotPaused(commands.CommandError):
     pass
+
 
 class NoMoreTracks(commands.CommandError):
     pass
 
+
 class NoPreviousTracks(commands.CommandError):
     pass
+
 
 class InvalidRepeatMode(commands.CommandError):
     pass
 
+
 class InvalidQueueEntry(commands.CommandError):
     pass
 
+
 class InvalidQueuePosition(commands.CommandError):
     pass
+
 
 class RepeatMode(Enum):
     NONE = 0
@@ -95,14 +106,14 @@ class Queue:
         if not self._queue:
             raise QueueIsEmpty
 
-        return self._queue[self.position + 1:]
+        return self._queue[self.position + 1 :]
 
     @property
     def history(self):
         if not self._queue:
             raise QueueIsEmpty
 
-        return self._queue[:self.position]
+        return self._queue[: self.position]
 
     @property
     def length(self):
@@ -133,7 +144,7 @@ class Queue:
 
         upcoming = self.upcoming
         random.shuffle(upcoming)
-        self._queue = self._queue[:self.position + 1]
+        self._queue = self._queue[: self.position + 1]
         self._queue.extend(upcoming)
 
     def set_repeat_mode(self, mode):
@@ -202,9 +213,7 @@ class Player(wavelink.Player):
     async def choose_track(self, ctx, tracks):
         def _check(r, u):
             return (
-                r.emoji in OPTIONS.keys()
-                and u == ctx.author
-                and r.message.id == msg.id
+                r.emoji in OPTIONS.keys() and u == ctx.author and r.message.id == msg.id
             )
 
         embed = Embed(
@@ -215,15 +224,17 @@ class Player(wavelink.Player):
                     f"**{i+1}.** {t.title} ({t.length//60000}:{str(t.length%60).zfill(2)})"
                     for i, t in enumerate(tracks[:5])
                 )
-            )
+            ),
         )
 
         msg = await ctx.send(embed=embed)
-        for emoji in list(OPTIONS.keys())[:min(len(tracks), len(OPTIONS))]:
+        for emoji in list(OPTIONS.keys())[: min(len(tracks), len(OPTIONS))]:
             await msg.add_reaction(emoji)
 
         try:
-            reaction, _ = await self.bot.wait_for("reaction_add", timeout=60.0, check=_check)
+            reaction, _ = await self.bot.wait_for(
+                "reaction_add", timeout=60.0, check=_check
+            )
         except asyncio.TimeoutError:
             await msg.delete()
             await ctx.message.delete()
@@ -327,7 +338,6 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         if not player.is_connected:
             await player.connect(ctx)
 
-        
         query = query.strip("<>")
         if not re.match(URL_REGEX, query):
             query = f"ytsearch:{query}"
@@ -419,7 +429,6 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         elif isinstance(exc, NoPreviousTracks):
             await ctx.error("There are no previous tracks in the queue.")
 
-
     @commands.command(name="shuffle")
     async def shuffle_command(self, ctx):
         """Shuffle the queue."""
@@ -461,17 +470,26 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
             upper_limit = 10
 
         for i in range(0, upper_limit):
-            final_string.append(f"{i + 1}. [{titles[i]}]({uris[i]}) | Requested by: {requester[i]}\n")
+            final_string.append(
+                f"{i + 1}. [{titles[i]}]({uris[i]}) | Requested by: {requester[i]}\n"
+            )
 
         embed = Embed(
             ctx,
             title=f"Queue for {ctx.channel.name}",
-            description=f"Showing the next 10 tracks. | Total queue length: {len(player.queue.upcoming)}"
+            description=f"Showing the next 10 tracks. | Total queue length: {len(player.queue.upcoming)}",
         )
-        embed.add_field (name="Now Playing:\n", value=f"[{player.queue.current_track.title}]({player.queue.current_track.uri}) | Requested by: {player.queue.current_track.requester.name}\n", inline=False)
+        embed.add_field(
+            name="Now Playing:\n",
+            value=f"[{player.queue.current_track.title}]({player.queue.current_track.uri}) | Requested by: {player.queue.current_track.requester.name}\n",
+            inline=False,
+        )
         if upcoming := player.queue.upcoming:
-            embed.add_field(name="Up next:\n", value="\n".join(
-            f"{string}" for string in final_string), inline=False)
+            embed.add_field(
+                name="Up next:\n",
+                value="\n".join(f"{string}" for string in final_string),
+                inline=False,
+            )
 
         await ctx.send(embed=embed)
 
@@ -479,7 +497,6 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
     async def queue_command_error(self, ctx, exc):
         if isinstance(exc, QueueIsEmpty):
             await ctx.error("The queue is empty.")
-
 
     @commands.command(name="move", aliases=["m"])
     async def move_command(self, ctx, entry: int, new_position: int):
@@ -496,7 +513,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         if not player.queue._queue[entry - 1]:
             raise InvalidQueueEntry
 
-        if not player.queue._queue[new_position -1]:
+        if not player.queue._queue[new_position - 1]:
             raise InvalidQueuePosition
 
         tmp = player.queue._queue[new_position - 1]
@@ -515,7 +532,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
             await ctx.error("This entry doesn't exist.")
         if isinstance(exc, InvalidQueuePosition):
             await ctx.error("This position is invalid.")
-        
+
 
 def setup(bot):
     bot.add_cog(Music(bot))

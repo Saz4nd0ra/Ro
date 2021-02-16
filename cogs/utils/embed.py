@@ -31,7 +31,7 @@ class Embed(discord.Embed):
 
     def add_fields(self, *fields: Tuple[str, str]):
         for name, value in fields:
-            self.add_field(name=name, value=value)
+            self.add_field(name=name, value=value, inline=True)
 
     @classmethod
     def error(cls, colour=0xF5291B, **kwargs):

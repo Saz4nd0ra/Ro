@@ -23,6 +23,7 @@ initial_extensions = (
     "cogs.music",
     "cogs.nsfw",
     "cogs.reddit",
+    "cogs.automod",
 )
 
 
@@ -32,7 +33,7 @@ class ADB(commands.AutoShardedBot):
             command_prefix=config.prefix,
             description=DESCRIPTION,
             fetch_offline_members=False,
-            heartbeat_timeout=150.0
+            heartbeat_timeout=150.0,
         )
         self.config = config
         self.session = aiohttp.ClientSession(loop=self.loop)
@@ -87,21 +88,7 @@ class ADB(commands.AutoShardedBot):
         if ctx.command is None:
             return
 
-        if str(message.author.id) in str(self.config.blacklisted_ids):
-            return
-
         await self.invoke(ctx)
-
-    async def on_message(self, message):
-        if message.author.bot:
-            return
-        await self.process_commands(message)
-        if self.config.enable_msg_logging:
-            if message.channel.id in self.config.msg_logging_channel:
-                f = open("./data/msgs.txt", "a")
-                f.write(f"{message.author.name}: {message.content}\n")
-                f.close()
-                log.info("Message logged")
 
     async def close(self):
         await super().close()

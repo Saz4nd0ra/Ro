@@ -141,9 +141,9 @@ class Mod(commands.Cog):
         to_send = "\n".join(messages)
 
         if len(to_send) > 2000:
-            await ctx.embed(f"Successfully removed {deleted} messages.", 10)
+            await ctx.embed(f"Successfully removed {deleted} messages.")
         else:
-            await ctx.embed(to_send, 10)
+            await ctx.embed(to_send)
 
     @checks.is_mod()
     @commands.command()
