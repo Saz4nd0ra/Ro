@@ -30,7 +30,7 @@ class Reddit:
 
         # napkin math
         downvotes = int(
-            ((submission.ups / (submission.upvote_ratio * 100)) * 100) - submission.ups
+            ((submission.score / (submission.upvote_ratio * 100)) * 100) - submission.score
         )
 
         VIDEO_URL = "v.redd.it"
@@ -56,9 +56,9 @@ class Reddit:
             )
 
         embed.add_fields(
-            ("Upvotes <:upvote:754073992771666020>:", f"{submission.ups}"),
+            ("Upvotes <:upvote:754073992771666020>:", f"{submission.score}"),
             ("Downvotes <:downvote:754073959791722569>:", f"{downvotes}"),
-            #("Comments :envelope::", f"{}"),
+            ("Comments :envelope::", f"{submission.num_comments}"),
             ("Author :keyboard::",f"[u/{submission.author.name}](https://reddit.com/u/{submission.author.name})"),
             ("Link :link::", f"[{submission.shortlink}]({submission.shortlink})"),
         )
