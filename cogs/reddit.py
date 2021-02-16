@@ -2,6 +2,7 @@ from .utils.context import Context
 from discord.ext import commands
 from .utils.embed import Embed
 from .utils.api import RedditAPI
+from .utils.config import Config
 
 REDDIT_DOMAINS = [
     "reddit.com",
@@ -15,7 +16,7 @@ class Reddit(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.api = RedditAPI()
-        self.config = self.bot.config
+        self.config = Config()
         self.voting_message = None
         if self.config.enable_redditembed:
             self.enable_embed = True

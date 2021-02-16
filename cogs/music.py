@@ -9,6 +9,7 @@ import re
 from enum import Enum
 from .utils.embed import Embed
 from .utils.context import Context
+from .utils.config import Config
 
 
 URL_REGEX = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
@@ -36,6 +37,9 @@ class NoTracksFound(commands.CommandError):
 class PlayerIsAlreadyPaused(commands.CommandError):
     pass
 
+class PlayerIsNotPaused(commands.CommandError):
+    pass
+
 class NoMoreTracks(commands.CommandError):
     pass
 
@@ -55,6 +59,17 @@ class RepeatMode(Enum):
     NONE = 0
     ONE = 1
     ALL = 2
+
+
+class Track(wavelink.Track):
+    """Wavelink Track object with a requester attribute."""
+
+    __slots__ = "requester"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args)
+
+        self.requester = kwargs.get("requester")
 
 
 class Queue:
@@ -164,16 +179,20 @@ class Player(wavelink.Player):
             raise NoTracksFound
 
         if isinstance(tracks, wavelink.TrackPlaylist):
-            self.queue.add(*tracks.tracks)
+            for track in tracks.tracks:
+                track = Track(track.id, track.info, requester=ctx.author)
+                self.queue.add(track)
             await ctx.embed(
-                f'`Added the playlist {tracks.data["playlistInfo"]["name"]}'
-                f" with {len(tracks.tracks)} songs to the queue.\n`"
+                f"Added the playlist {tracks.data['playlistInfo']['name']}"
+                f"with {len(tracks.tracks)} songs to the queue.\n"
             )
         elif len(tracks) == 1:
-            self.queue.add(tracks[0])
-            await ctx.embed(f"Added {tracks[0].title} to the queue.")
+            track = Track(tracks[0].id, tracks[0].info, requester=ctx.author)
+            self.queue.add(track)
+            await ctx.embed(f"Added {track.title} to the queue.")
         else:
-            if (track := await self.choose_track(ctx, tracks)) is not None:
+            if (chosen_track := await self.choose_track(ctx, tracks)) is not None:
+                track = Track(chosen_track.id, chosen_track.info, requester=ctx.author)
                 self.queue.add(track)
                 await ctx.embed(f"Added {track.title} to the queue.")
 
@@ -229,7 +248,7 @@ class Player(wavelink.Player):
 class Music(commands.Cog, wavelink.WavelinkMixin):
     def __init__(self, bot):
         self.bot = bot
-        self.config = self.bot.config
+        self.config = Config()
         self.wavelink = wavelink.Client(bot=bot)
         self.bot.loop.create_task(self.start_nodes())
 
@@ -308,19 +327,12 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         if not player.is_connected:
             await player.connect(ctx)
 
-        if query is None:
-            if player.queue.is_empty:
-                raise QueueIsEmpty
+        
+        query = query.strip("<>")
+        if not re.match(URL_REGEX, query):
+            query = f"ytsearch:{query}"
 
-            await player.set_pause(False)
-            await ctx.embed("Playback resumed.")
-
-        else:
-            query = query.strip("<>")
-            if not re.match(URL_REGEX, query):
-                query = f"ytsearch:{query}"
-
-            await player.add_tracks(ctx, await self.wavelink.get_tracks(query))
+        await player.add_tracks(ctx, await self.wavelink.get_tracks(query))
 
     @play_command.error
     async def play_command_error(self, ctx, exc):
@@ -331,6 +343,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @commands.command(name="pause")
     async def pause_command(self, ctx):
+        """Pause the playback."""
         player = self.get_player(ctx)
 
         if player.is_paused:
@@ -344,8 +357,25 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         if isinstance(exc, PlayerIsAlreadyPaused):
             await ctx.error("Already paused.")
 
+    @commands.command(name="resume")
+    async def resume_command(self, ctx):
+        """Resume the playback."""
+        player = self.get_player(ctx)
+
+        if not player.is_paused:
+            raise PlayerIsNotPaused
+
+        await player.set_pause(False)
+        await ctx.embed("Playback resumed.")
+
+    @resume_command.error
+    async def resume_command_error(self, ctx, exc):
+        if isinstance(exc, PlayIsNotPaused):
+            await ctx.error("Player is not paused.")
+
     @commands.command(name="stop")
     async def stop_command(self, ctx):
+        """Stop the playback and yeet the player."""
         player = self.get_player(ctx)
         player.queue.empty()
         await player.stop()
@@ -353,6 +383,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @commands.command(name="next", aliases=["skip", "s"])
     async def next_command(self, ctx):
+        """Play the next song, aka skip."""
         player = self.get_player(ctx)
 
         if not player.queue.upcoming:
@@ -371,6 +402,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @commands.command(name="previous")
     async def previous_command(self, ctx):
+        """Play the previous song."""
         player = self.get_player(ctx)
 
         if not player.queue.history:
@@ -390,6 +422,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @commands.command(name="shuffle")
     async def shuffle_command(self, ctx):
+        """Shuffle the queue."""
         player = self.get_player(ctx)
         player.queue.shuffle()
         await ctx.embed("Queue shuffled.")
@@ -401,6 +434,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @commands.command(name="repeat")
     async def repeat_command(self, ctx, mode: str):
+        """Repeat the current song once, or loop it forever."""
         if mode not in ("none", "1", "all"):
             raise InvalidRepeatMode
 
@@ -409,30 +443,37 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         await ctx.embed(f"The repeat mode has been set to {mode}.")
 
     @commands.command(name="queue", aliases=["q"])
-    async def queue_command(self, ctx, show: int = 25):
+    async def queue_command(self, ctx):
+        """Show the current queue."""
         player = self.get_player(ctx)
 
         if player.queue.is_empty:
             raise QueueIsEmpty
 
+        final_string = []
+        titles = [track.title for track in player.queue.upcoming[:10]]
+        uris = [track.uri for track in player.queue.upcoming[:10]]
+        requester = [track.requester.name for track in player.queue.upcoming[:10]]
+
+        if len(titles) <= 10:
+            upper_limit = len(titles)
+        else:
+            upper_limit = 10
+
+        for i in range(0, upper_limit):
+            final_string.append(f"{i + 1}. [{titles[i]}]({uris[i]}) | Requested by: {requester[i]}\n")
+
         embed = Embed(
             ctx,
-            title="Queue",
-            description=f"Showing up to next {show} tracks"
+            title=f"Queue for {ctx.channel.name}",
+            description=f"Showing the next 10 tracks. | Total queue length: {len(player.queue.upcoming)}"
         )
-        embed.add_field(
-            name="Currently playing",
-            value=getattr(player.queue.current_track, "title", "No tracks currently playing."),
-            inline=False
-        )
+        embed.add_field (name="Now Playing:\n", value=f"[{player.queue.current_track.title}]({player.queue.current_track.uri}) | Requested by: {player.queue.current_track.requester.name}\n", inline=False)
         if upcoming := player.queue.upcoming:
-            embed.add_field(
-                name="Next up",
-                value="\n".join(t.title for t in upcoming[:show]),
-                inline=False
-            )
+            embed.add_field(name="Up next:\n", value="\n".join(
+            f"{string}" for string in final_string), inline=False)
 
-        msg = await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @queue_command.error
     async def queue_command_error(self, ctx, exc):

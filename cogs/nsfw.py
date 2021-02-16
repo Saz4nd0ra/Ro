@@ -2,6 +2,7 @@ from discord.ext import commands
 from .utils import checks
 from .utils.api import Rule34API, DanbooruAPI, SauceNaoAPI
 from .utils.embed import Embed
+from .utils.config import Config
 
 
 class NSFW(commands.Cog):
@@ -9,7 +10,7 @@ class NSFW(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = self.bot.config
+        self.config = Config()
         self.rule34 = Rule34API()
         self.danbooru = DanbooruAPI()
         self.saucenao = SauceNaoAPI()
