@@ -461,8 +461,8 @@ class General(commands.Cog):
         final_url = f"<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>"
         await ctx.send(final_url)
 
-    @commands.command(aliases=["invite"])
-    async def join(self, ctx):
+    @commands.command()
+    async def invite(self, ctx):
         """Joins a server."""
         perms = discord.Permissions.none()
         perms.read_messages = True

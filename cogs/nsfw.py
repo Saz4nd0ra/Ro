@@ -1,6 +1,5 @@
 from discord.ext import commands
 from .utils import checks
-from .utils.api import Rule34API, DanbooruAPI, SauceNaoAPI
 from .utils.embed import Embed
 from .utils.config import Config
 
@@ -11,9 +10,6 @@ class NSFW(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config()
-        self.rule34 = Rule34API()
-        self.danbooru = DanbooruAPI()
-        self.saucenao = SauceNaoAPI()
 
     # TODO work on a blacklist system and user configs (yikes)
     @checks.is_nsfw_channel()
@@ -29,7 +25,7 @@ class NSFW(commands.Cog):
         pass
 
     @checks.is_nsfw_channel()
-    @commands.command(aliases=["sauce"])
+    @commands.command()
     async def saucenao(self, ctx, *, url: str):
         """Get the sauce from pictures via an URL. Only available in NSFW channels."""
         pass
