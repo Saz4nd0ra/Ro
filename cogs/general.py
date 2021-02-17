@@ -2,6 +2,7 @@ import logging
 import discord
 from discord.ext import commands, menus
 from .utils.embed import Embed
+from .utils.config import Config
 from .utils.paginator import ADBPages
 from .utils import time, formats
 from collections import Counter
@@ -243,6 +244,7 @@ class General(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.config = Config()
         self.old_help_command = bot.help_command
         bot.help_command = PaginatedHelpCommand()
         bot.help_command.cog = self
@@ -459,8 +461,8 @@ class General(commands.Cog):
         final_url = f"<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>"
         await ctx.send(final_url)
 
-    @commands.command()
-    async def invite(self, ctx):
+    @commands.command(aliases=["invite"])
+    async def join(self, ctx):
         """Joins a server."""
         perms = discord.Permissions.none()
         perms.read_messages = True
@@ -475,9 +477,7 @@ class General(commands.Cog):
         perms.read_message_history = True
         perms.attach_files = True
         perms.add_reactions = True
-        perms.speak = True
-        perms.move_members = True
-        await ctx.send(f"<{discord.utils.oauth_url(self.bot.client_id, perms)}>")
+        await ctx.send(f"<{discord.utils.oauth_url(self.config.client_id, perms)}>")
 
     @commands.command()
     async def bug(self, ctx, *, command: str = None):

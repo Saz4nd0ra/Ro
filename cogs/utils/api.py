@@ -1,10 +1,11 @@
-import praw
+import asyncpraw
 from .config import Config
 import random
 from rule34 import Rule34
-from pybooru import Danbooru
 import asyncio
-from saucenao_api import SauceNao
+import humanize
+from .embed import Embed
+
 
 VIDEO_FORMATS = [
     "mp4",
@@ -13,11 +14,15 @@ VIDEO_FORMATS = [
 ]
 
 
+def send_embed(ctx, obj):
+    pass
+
+
 class RedditAPI:
     def __init__(self):
 
         self.config = Config()
-        self.connection = praw.Reddit(
+        self.connection = asyncpraw.Reddit(
             client_id=self.config.praw_clientid,  # connecting to reddit using appilcation details and account details
             client_secret=self.config.praw_secret,
             password=self.config.praw_password,  # the actual password of the application account
@@ -27,11 +32,11 @@ class RedditAPI:
 
     async def get_submission(self, subreddit: str, sorting: str):
         if sorting == "hot":
-            submissions = self.connection.subreddit(subreddit).hot(limit=100)
+            submissions = await self.connection.subreddit(subreddit).hot(limit=100)
         elif sorting == "new":
-            submissions = self.connection.subreddit(subreddit).new(limit=3)
+            submissions = await self.connection.subreddit(subreddit).new(limit=3)
         else:
-            submissions = self.connection.subreddit(subreddit).top(limit=100)
+            submissions = await self.connection.subreddit(subreddit).top(limit=100)
 
         post_to_pick = random.randint(1, 100)
 
@@ -40,8 +45,78 @@ class RedditAPI:
         return submission
 
     async def get_submission_from_url(self, reddit_url: str):
-        submission = self.connection.submission(url=reddit_url)
+        submission = await self.connection.submission(url=reddit_url)
         return submission
+
+    async def build_embed(
+        self,
+        ctx,
+        submission: asyncpraw.models.Submission = None,
+        user: asyncpraw.models.Redditor = None,
+    ):
+        """Embed that doesn't include a voting system."""
+
+        VIDEO_URL = "v.redd.it"
+        IMAGE_URL = "i.redd.it"
+
+        if submission is not None:
+            downvotes = int(
+                ((submission.score / (submission.upvote_ratio * 100)) * 100)
+                - submission.score
+            )
+
+            if VIDEO_URL in submission.url:
+                if hasattr(submission, "preview"):
+                    preview_image_link = submission.preview["images"][0]["source"][
+                        "url"
+                    ]
+                    embed = Embed(
+                        ctx, title=submission.title, thumbnail=preview_image_link
+                    )
+                else:
+                    preview_image_link = "https://imgur.com/MKnguLq.png"
+                embed = Embed(ctx, title=submission.title, thumbnail=preview_image_link)
+            elif IMAGE_URL in submission.url:
+                embed = Embed(ctx, title=submission.title, image=submission.url)
+            else:
+                embed = Embed(ctx, title=submission.title)
+                embed.add_field(
+                    name="Text:",
+                    value=submission.selftext
+                    if len(submission.selftext) <= 1024
+                    else "This post is too long to fit in an Embed. Sending another massge with the text.",
+                    inline=False,
+                )
+
+            embed.add_fields(
+                ("Upvotes:", f"{submission.score}"),
+                ("Downvotes:", f"{downvotes}"),
+                ("Comments:", f"{submission.num_comments}"),
+                (
+                    "Author:",
+                    f"[u/{submission.author.name}](https://reddit.com/u/{submission.author.name})",
+                ),
+                ("Link:", f"{submission.shortlink}"),
+            )
+        else:
+            if user.is_suspended:
+                embed = Embed(
+                    ctx, title=f"u/{user.name}", description="This user is suspended."
+                )
+            else:
+                embed = Embed(
+                    ctx,
+                    title=f"u/{user.name}](https://reddit.com/u/{user.name})",
+                    thumbnail=user.icon_img,
+                )
+                embed.add_fields(
+                    ("Comment Karma:", f"{user.comment_karma}"),
+                    ("Post Karma:", f"{user.link_karma}"),
+                    ("Created at:", f"{humanize.naturaldate(user.created_utc)}"),
+                    ("Is verified:", "Yes" if user.has_verified_email else "No"),
+                )
+
+        return embed
 
 
 class Rule34API:
@@ -49,63 +124,13 @@ class Rule34API:
         self.loop = asyncio.get_event_loop()
         self.rule34 = Rule34(self.loop)
 
-    async def get_random_r34(self, search):
-
-        images = await self.rule34.getImages(tags=search)
-        try:
-            file = images[random.randint(0, len(images) - 1)]
-        except TypeError:
-            return
-
-        if any(x in file.file_url for x in VIDEO_FORMATS):
-            is_video = True
-        else:
-            is_video = False
-
-        if file.source:
-            has_source = True
-        else:
-            has_source = False
-
-        return file, is_video, has_source
+    async def search_r34(self, search):
+        pass
 
 
-class DanbooruAPI:
-    def __init__(self):
-        self.danbooru = Danbooru("danbooru")
-
-    def get_random_danbooru(self, search):
-
-        images = self.danbooru.post_list(tags=search, limit=100)
-
-        try:
-            file = images[random.randint(0, len(images) - 1)]
-        except TypeError:
-            return
-
-        if any(x in file["file_url"] for x in VIDEO_FORMATS):
-            is_video = True
-        else:
-            is_video = False
-
-        if file["source"]:
-            has_source = True
-        else:
-            has_source = False
-
-        return file, is_video, has_source
+class BooruAPI:
+    pass
 
 
 class SauceNaoAPI:
-    def __init__(self):
-        self.saucenao = SauceNao()
-
-    def get_sauce_from_url(self, url):
-        results = self.saucenao.from_url(url)
-
-        return results[0]
-
-    def get_sauce_from_file(self, file):
-        results = self.saucenao.from_file(file)
-
-        return results[0]
+    pass

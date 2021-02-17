@@ -50,7 +50,7 @@ class MemberID(commands.Converter):
                 raise commands.BadArgument(
                     f"{argument} is not a valid member or member ID."
                 ) from None
-            except Exception as e:
+            except Exception:
                 # hackban case
                 return type(
                     "_Hackban",
