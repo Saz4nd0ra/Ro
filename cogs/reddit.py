@@ -27,7 +27,7 @@ class Reddit(commands.Cog):
     @commands.command()
     async def redditor(self, ctx, *, name: str):
         """Display a redditors profile using their name."""
-        user = await self.api.get_user(self, name)
+        user = await self.api.get_user(name)
 
         if user.is_suspended:
             embed = Embed(ctx, title=f"u/{user.name}", description="This user is suspended.")
