@@ -24,7 +24,7 @@ class Reddit(commands.Cog):
         self.api = RedditAPI()
         self.config = Config()
 
-    @commands.command
+    @commands.command()
     async def redditor(self, ctx, *, name: str):
         """Display a redditors profile using their name."""
         user = await self.api.get_user(self, name)
@@ -41,7 +41,7 @@ class Reddit(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command
+    @commands.command()
     async def meme(self, ctx):
         """Get a random meme."""
         submission = await self.api.get_submission("memes", "hot")
@@ -50,14 +50,14 @@ class Reddit(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command
+    @commands.command()
     async def embedify(self, ctx, * , url: str):
         """Embedify a reddit post. Use in case the automatic embedifier is deactivated."""
         if self.config.enable_redditembed == True:
             await ctx.error("Reddit embeds are enabled. Just share the link without using the command next time!", 10)
         
         submission = await self.api.get_submission_from_url(url)
-        
+
         embed = await self.api.build_embed(ctx, submission)
 
         await ctx.send(embed=embed)
