@@ -22,6 +22,19 @@ class Testcog(commands.Cog):
         await ctx.send(guild_config.guild_prefix)
 
         await ctx.embed(f"Config generated for {ctx.guild.id}")
+        embed.add_field(
+            name="Now Playing:\n",
+            value=f"[{player.queue.current_track.title}]({player.queue.current_track.uri}) | Requested by: {player.queue.current_track.requester.name}\n",
+            inline=False,
+        )
+        if len(final_string) == 0:
+            pass
+        else:
+            embed.add_field(
+                name="Up next:\n",
+                value="".join(f"{string}" for string in final_string),
+                inline=False,
+            )
 
 def setup(bot):
     bot.add_cog(Testcog(bot))

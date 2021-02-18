@@ -1,4 +1,4 @@
-humanize
+arrow
 git+https://github.com/Rapptz/discord-ext-menus.git
 discord.py
 PyNaCl

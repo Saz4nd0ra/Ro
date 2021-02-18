@@ -4,10 +4,10 @@ from discord.ext import commands, menus
 from .utils.embed import Embed
 from .utils.config import Config
 from .utils.paginator import ADBPages
-from .utils import time, formats
+from .utils import formats
 from collections import Counter
 import asyncio
-import humanize
+import arrow
 import unicodedata
 import inspect
 import os
@@ -376,11 +376,6 @@ class General(commands.Cog):
             boosts = (
                 f"Level {guild.premium_tier}\n{guild.premium_subscription_count} boosts"
             )
-            last_boost = max(
-                guild.members, key=lambda m: m.premium_since or guild.created_at
-            )
-            if last_boost.premium_since is not None:
-                boosts = f"{boosts}\nLast Boost: {last_boost} ({time.human_timedelta(last_boost.premium_since, accuracy=2)})"
             embed.add_field(name="Boosts", value=boosts, inline=False)
 
         bots = sum(m.bot for m in guild.members)

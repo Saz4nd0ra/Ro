@@ -462,11 +462,15 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         if player.queue.is_empty:
             raise QueueIsEmpty
 
-        final_string = []
+        final_string = ""
         titles = [track.title for track in player.queue.upcoming[:10]]
         uris = [track.uri for track in player.queue.upcoming[:10]]
         requester = [track.requester.name for track in player.queue.upcoming[:10]]
 
+        length = 0
+
+        for track in player.queue.upcoming:
+            length += track.length
 
         if len(titles) >= 10:
             upper_limit = 10
@@ -474,28 +478,19 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
             upper_limit = len(titles)
 
         for i in range(0, upper_limit):
-            final_string.append(
-                f"{i + 1}. [{titles[i]}]({uris[i]}) | Requested by: {requester[i]}\n"
-            )
+            final_string += f"{i + 1}. [{titles[i]}]({uris[i]}) | Requested by: {requester[i]}\n\n"
+        
 
         embed = Embed(
             ctx,
             title=f"Queue for {ctx.channel.name}",
-            description=f"Showing the next 10 tracks. | Total queue length: {len(player.queue.upcoming)}",
+            description="**Now Playing:**\n\n"
+                       f"[{player.queue.current_track.title}]({player.queue.current_track.uri}) | Requested by: {player.queue.current_track.requester.name}\n\n"
+                        "**Up next:\n\n**"
+                       f"{final_string}"
+                       f"{len(player.queue.upcoming)} songs in queue | Total length: {"
         )
-        embed.add_field(
-            name="Now Playing:\n",
-            value=f"[{player.queue.current_track.title}]({player.queue.current_track.uri}) | Requested by: {player.queue.current_track.requester.name}\n",
-            inline=False,
-        )
-        if len(final_string) == 0:
-            pass
-        else:
-            embed.add_field(
-                name="Up next:\n",
-                value="".join(f"{string}" for string in final_string),
-                inline=False,
-            )
+        print(len(embed.description))
         await ctx.send(embed=embed)
     @queue_command.error
     async def queue_command_error(self, ctx, exc):
