@@ -20,13 +20,13 @@ class Config:
         self.owner_id = config["IDs"]["OwnerID"]
         self.dev_ids = config["IDs"]["DevIDs"]
 
-        self.prefix = config["Bot"]["DefaultPrefix"]
+        self.default_prefix = config["Bot"]["DefaultPrefix"]
 
         self.ll_host = config["Music"]["LavalinkHost"]
         self.ll_port = config["Music"]["LavalinkPort"]
         self.ll_passwd = config["Music"]["LavalinkPassword"]
 
-        self.enable_redditembed = config["Reddit"]["RedditEmbed"]
+        self.enable_redditembed = bool(config["Reddit"]["RedditEmbed"])
         self.praw_username = config["Reddit"]["PrawUsername"]
         self.praw_password = config["Reddit"]["PrawPassword"]
         self.praw_secret = config["Reddit"]["PrawSecret"]

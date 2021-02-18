@@ -1,7 +1,6 @@
 import asyncpraw
 from .config import Config
 import random
-from rule34 import Rule34
 import asyncio
 from .embed import Embed
 
@@ -28,27 +27,27 @@ class RedditAPI:
             user_agent="another-discord-bot by /u/Saz4nd0ra",
         )
 
-    async def get_submission(self, subreddit: str, sorting: str):
+    async def get_submission(self, subreddit_name: str, sorting: str):
+        subreddit = await self.reddit.subreddit(subreddit_name)
+
         if sorting == "hot":
-            submissions = await self.reddit.subreddit(subreddit).hot(limit=100)
+            submission_list = [submission async for submission in subreddit.hot(limit=20) if not submission.stickied]
         elif sorting == "new":
-            submissions = await self.reddit.subreddit(subreddit).new(limit=3)
+            submission_list = [submission async for submission in subreddit.new(limit=20) if not submission.stickied]
         else:
-            submissions = await self.reddit.subreddit(subreddit).top(limit=100)
+            submission_list = [submission async for submission in subreddit.top(limit=20) if not submission.stickied]
 
-        post_to_pick = random.randint(1, 100)
+        submission_list[random.randint(0, len(submission_list) - 1)]
 
-        for x in range(0, post_to_pick):
-            submission = next(x for x in submissions if not x.stickied)
         return submission
 
-    async def get_submission_from_url(self, url: str):
-        submission = await self.reddit.submission(url)
+    async def get_submission_from_url(self, reddit_url: str):
+        submission = await self.reddit.submission(url=reddit_url)
         return submission
 
-    async def get_user(self, name: str):
-        user = await self.reddit.redditor(name)
-        return user
+    async def get_redditor(self, redditor_name: str):
+        redditor = await self.reddit.redditor(name=redditor_name, fetch=True)
+        return redditor
 
     async def build_embed(self, ctx, submission: asyncpraw.models.Submission = None):
         """Embed that doesn't include a voting system."""
@@ -63,14 +62,14 @@ class RedditAPI:
         if VIDEO_URL in submission.url:
             if hasattr(submission, "preview"):
                 preview_image_link = submission.preview["images"][0]["source"]["url"]
-                embed = Embed(ctx, title=submission.title, thumbnail=preview_image_link)
+                embed = Embed(ctx, title=submission.title, thumbnail=preview_image_link, url=submission.shortlink)
             else:
                 preview_image_link = "https://imgur.com/MKnguLq.png"
-            embed = Embed(ctx, title=submission.title, thumbnail=preview_image_link)
+            embed = Embed(ctx, title=submission.title, thumbnail=preview_image_link, url=submission.shortlink)
         elif IMAGE_URL in submission.url:
-            embed = Embed(ctx, title=submission.title, image=submission.url)
+            embed = Embed(ctx, title=submission.title, image=submission.url, url=submission.shortlink)
         else:
-            embed = Embed(ctx, title=submission.title)
+            embed = Embed(ctx, title=submission.title, url=submission.shortlink)
             embed.add_field(
                 name="Text:",
                 value=submission.selftext
@@ -84,18 +83,14 @@ class RedditAPI:
             ("Downvotes:", f"{downvotes}"),
             ("Comments:", f"{submission.num_comments}"),
             ("Author:",f"[u/{submission.author.name}](https://reddit.com/u/{submission.author.name})"),
+            ("Subreddit:", f"[r/{submission.subreddit}](https://reddid.com/r/{submission.subreddit})"),
             ("Link:", f"{submission.shortlink}"))
 
         return embed
 
 
 class Rule34API:
-    def __init__(self):
-        self.loop = asyncio.get_event_loop()
-        self.rule34 = Rule34(self.loop)
-
-    async def search_r34(self, search):
-        pass
+    pass
 
 class BooruAPI:
     pass

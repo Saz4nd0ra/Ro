@@ -30,7 +30,7 @@ initial_extensions = (
 class ADB(commands.AutoShardedBot):
     def __init__(self, config=Config()):
         super().__init__(
-            command_prefix=config.prefix,
+            command_prefix=config.default_prefix,
             description=DESCRIPTION,
             fetch_offline_members=False,
             heartbeat_timeout=150.0,
@@ -59,7 +59,7 @@ class ADB(commands.AutoShardedBot):
         print(f"Ready: {self.user} (ID: {self.user.id})")
         await self.change_presence(
             activity=discord.Streaming(
-                name=f"{self.config.prefix}help",
+                name=f"{self.config.default_prefix}help",
                 url="https://www.twitch.tv/commanderroot",
             )
         )

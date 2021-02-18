@@ -10,11 +10,6 @@ class Embed(discord.Embed):
         )
 
         self.timestamp = ctx.message.created_at
-        self.set_author(
-            name=title,
-            icon_url=ctx.author.avatar_url,
-            url="https://github.com/Saz4nd0ra/another-discord-bot",
-        )
 
         self.description = kwargs.get("description")
 
@@ -28,6 +23,19 @@ class Embed(discord.Embed):
 
         if kwargs.get("thumbnail"):
             self.set_thumbnail(url=kwargs.get("thumbnail"))
+
+        if kwargs.get("url"):
+            self.set_author(
+                name=title,
+                icon_url=ctx.author.avatar_url,
+                url=kwargs.get("url")
+            )
+        else:
+            self.set_author(
+                name=title,
+                icon_url=ctx.author.avatar_url,
+                url="https://github.com/Saz4nd0ra/another-discord-bot"
+            )
 
     def add_fields(self, *fields: Tuple[str, str]):
         for name, value in fields:

@@ -24,7 +24,7 @@ class AutoMod(commands.Cog):
         """Catch reddit links, check them, and then return them as an embed."""
         ctx = await self.bot.get_context(message, cls=Context)
         if self.config.enable_redditembed:
-            if any(x in message.content for x in REDDIT_DOMAINS):
+            if any(x in message.content for x in REDDIT_DOMAINS) and not message.content.startswith(str(ctx.prefix)):
                 reddit_url = message.content
                 submission = await self.reddit.get_submission_from_url(reddit_url)
                 if submission.over_18 and not message.channel.is_nsfw():
@@ -34,8 +34,8 @@ class AutoMod(commands.Cog):
                     )
                 else:
                     await message.delete()
-                    await ctx.send(embed=await self.reddit.send_embed(ctx, submission))
-                    if submission.selftext > 1024:
+                    await ctx.send(embed=await self.reddit.build_embed(ctx, submission))
+                    if len(submission.selftext) > 1024:
                         ctx.send(submission.selftext)
 
 
