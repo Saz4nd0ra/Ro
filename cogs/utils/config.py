@@ -35,12 +35,12 @@ class Config:
 
 
 class GuildConfig:
-    def __init__(self, ctx):
-        if not os.path.exists(f"config/guild/{ctx.guild.id}.json"):
+    def __init__(self, guild):
+        if not os.path.exists(f"config/guild/{guild.id}.json"):
             shutil.copyfile(
-                "config/guild/example_guild_options.json", f"config/guild/{ctx.guild.id}.json"
+                "config/guild/example_guild_options.json", f"config/guild/{guild.id}.json"
             )
-        with open(f"config/guild/{ctx.guild.id}.json") as f:
+        with open(f"config/guild/{guild.id}.json") as f:
             guild_config = json.load(f)
 
         self.automod_newmemberrole = guild_config["AutoMod"]["NewMemberRole"]

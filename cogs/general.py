@@ -488,7 +488,7 @@ class General(commands.Cog):
         else:
             owner_id = self.bot.config.owner_id
 
-        owner = await self.bot.get_user_info(owner_id)
+        owner = await self.bot.get_user(owner_id)
 
         await self.bot.send_message(
             owner, f"{ctx.message.author} ran into an error. Used command: {command}."

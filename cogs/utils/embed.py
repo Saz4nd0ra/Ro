@@ -4,9 +4,9 @@ from typing import Tuple
 
 
 class Embed(discord.Embed):
-    def __init__(self, ctx, title, colour=0x7289DA, timestamp=None, **kwargs):
+    def __init__(self, ctx, title, colour=0x7289DA, **kwargs):
         super(Embed, self).__init__(
-            colour=colour, timestamp=timestamp or datetime.datetime.utcnow(), **kwargs
+            colour=colour, **kwargs
         )
 
         self.timestamp = ctx.message.created_at

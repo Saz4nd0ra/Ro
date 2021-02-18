@@ -19,7 +19,6 @@ def is_owner():
         elif str(ctx.author.id) == ctx.bot.config.owner_id:
             return True
         else:
-            await ctx.error("This command is an owner only command.")
             return False
 
     return commands.check(predicate)
@@ -30,10 +29,8 @@ def is_admin():
         if await check_guild_permissions(ctx, {"administrator": True}):
             return True
         elif is_owner() == True:  # bypass for owner
-            log.info("Owner used admin command.")
             return True
         else:
-            await ctx.error("This command is an admin only command.")
             return False
 
     return commands.check(predicate)
@@ -46,10 +43,8 @@ def is_mod():
         elif is_admin():
             return True
         elif is_owner():  # again, bypass for owner
-            log.info("Owner used mod command.")
             return True
         else:
-            await ctx.error("This command is a mod only command.")
             return False
 
     return commands.check(predicate)
@@ -59,11 +54,7 @@ def is_dev():
     async def predicate(ctx):
         if str(ctx.author.id) in ctx.bot.config.dev_ids:
             return True
-        elif is_owner() == True:  # again, bypass for owner
-            log.info("Owner used developer command.")
-            return True
         else:
-            await ctx.error("This command is a developer only command.")
             return False
 
     return commands.check(predicate)
