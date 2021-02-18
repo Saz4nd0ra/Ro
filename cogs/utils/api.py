@@ -37,7 +37,7 @@ class RedditAPI:
         else:
             submission_list = [submission async for submission in subreddit.top(limit=20) if not submission.stickied]
 
-        submission_list[random.randint(0, len(submission_list) - 1)]
+        submission = submission_list[random.randint(0, len(submission_list) - 1)]
 
         return submission
 

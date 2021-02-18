@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+import json
 import codecs
 from configparser import ConfigParser
 
@@ -35,17 +36,27 @@ class Config:
 
 class GuildConfig:
     def __init__(self, ctx):
-        guild_config = ConfigParser()
-        if not os.path.exists(f"config/guild/{ctx.guild.id}.ini"):
+        if not os.path.exists(f"config/guild/{ctx.guild.id}.json"):
             shutil.copyfile(
-                "config/guild/example_options.ini", f"config/guild/{ctx.guild.id}.ini"
+                "config/guild/example_guild_options.json", f"config/guild/{ctx.guild.id}.json"
             )
-        with open(f"config/guild/{ctx.guild.id}.ini") as f:
-            guild_config.read_file(f)
+        with open(f"config/guild/{ctx.guild.id}.json") as f:
+            guild_config = json.load(f)
 
         self.automod_newmemberrole = guild_config["AutoMod"]["NewMemberRole"]
+        self.automod_greeting = guild_config["AutoMod"]["Greeting"]
 
         self.guild_modrole = guild_config["Roles"]["ModRole"]
         self.guild_adminrole = guild_config["Roles"]["AdminRole"]
 
         self.guild_prefix = guild_config["General"]["Prefix"]
+
+class UserConfig:
+    def __init__(self, ctx):
+        if not os.path.exists(f"config/user/{ctx.author.id}.json"):
+            shutil.copyfile(
+                "config/guild/example_user_options.json", f"config/user/{ctx.author.id}.json"
+            )
+        with open(f"config/guild/{ctx.author.id}.json") as f:
+            user_config = json.load(f)
+        

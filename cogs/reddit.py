@@ -1,6 +1,8 @@
 from .utils.context import Context
+import discord
 from discord.ext import commands
 import humanize
+from .utils import checks
 from .utils.embed import Embed
 from .utils.api import RedditAPI
 from .utils.config import Config
@@ -66,6 +68,16 @@ class Reddit(commands.Cog):
         await ctx.message.delete()
         await ctx.send(embed=embed)
 
+    @checks.is_nsfw_channel()
+    @commands.command()
+    async def thighs(self, ctx):
+        """Get some thighs from r/thighdeology."""
+
+        submission = await self.api.get_submission(subreddit_name="thighdeology", sorting="hot")
+
+        embed = await self.api.build_embed(ctx, submission)
+        await ctx.send(embed=embed)
+        
         
 
 def setup(bot):
