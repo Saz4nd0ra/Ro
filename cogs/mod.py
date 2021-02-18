@@ -47,9 +47,7 @@ class MemberID(commands.Converter):
                 member_id = int(argument, base=10)
                 m = await resolve_member(ctx.guild, member_id)
             except ValueError:
-                raise commands.BadArgument(
-                    f"{argument} is not a valid member or member ID."
-                ) from None
+                raise ValueError
             except Exception:
                 # hackban case
                 return type(
@@ -63,7 +61,6 @@ class MemberID(commands.Converter):
                 "You cannot do this action on this user due to role hierarchy."
             )
         return m
-
 
 class ActionReason(commands.Converter):
     async def convert(self, ctx, argument):
@@ -146,8 +143,8 @@ class Mod(commands.Cog):
             await ctx.embed(to_send)
 
     @checks.is_mod()
-    @commands.command()
-    async def kick(self, ctx, member: MemberID, *, reason: ActionReason = None):
+    @commands.command(name="kick")
+    async def kick_command(self, ctx, member: MemberID, *, reason: ActionReason = None):
         """Kicks a member from the server."""
 
         if reason is None:
@@ -157,8 +154,8 @@ class Mod(commands.Cog):
         await ctx.embed(f"**{member}** was kicked.")
 
     @checks.is_mod()
-    @commands.command()
-    async def ban(self, ctx, member: MemberID, *, reason: ActionReason = None):
+    @commands.command(name="ban")
+    async def ban_command(self, ctx, member: MemberID, *, reason: ActionReason = None):
         """Bans a member from the server."""
 
         if reason is None:
@@ -168,8 +165,8 @@ class Mod(commands.Cog):
         await ctx.embed(f"**{member}** was banned.")
 
     @checks.is_mod()
-    @commands.command()
-    async def unban(self, ctx, member: BannedMember, *, reason: ActionReason = None):
+    @commands.command(name="unban")
+    async def unban_command(self, ctx, member: BannedMember, *, reason: ActionReason = None):
         """Unbans a member from the server."""
 
         if reason is None:
@@ -184,8 +181,8 @@ class Mod(commands.Cog):
             await ctx.embed(f"Unbanned {member.user} (ID: {member.user.id}).")
 
     @checks.is_mod()
-    @commands.command()
-    async def softban(self, ctx, member: MemberID, *, reason: ActionReason = None):
+    @commands.command(name="softban")
+    async def softban_command(self, ctx, member: MemberID, *, reason: ActionReason = None):
         """Soft bans a member from the server."""
 
         if reason is None:
@@ -196,8 +193,8 @@ class Mod(commands.Cog):
         await ctx.embed(f"**{member}** was softbanned.")
 
     @checks.is_mod()
-    @commands.command()
-    async def mute(self, ctx, member: MemberID, time: int = 15):
+    @commands.command(name="mute")
+    async def mute_command(self, ctx, member: MemberID, time: int = 15):
         """Mute a member in the guild"""
         secs = time * 60
         for channel in ctx.guild.channels:  # muting
@@ -215,8 +212,8 @@ class Mod(commands.Cog):
         await ctx.embed(f"**{member}** has been unmuted from the guild.")
 
     @checks.is_mod()
-    @commands.command()
-    async def unmute(self, ctx, member: MemberID):
+    @commands.command(name="unmute")
+    async def unmute_command(self, ctx, member: MemberID):
         """Unmute a member in the guild"""
         for channel in ctx.guild.channels:
             if isinstance(channel, discord.TextChannel):
@@ -226,8 +223,8 @@ class Mod(commands.Cog):
         await ctx.embed(f"**{member}** has been unmuted from the guild.")
 
     @checks.is_mod()
-    @commands.command()
-    async def warn(self, ctx, member: MemberID, *, reason: str):
+    @commands.command(name="warn")
+    async def warn_command(self, ctx, member: MemberID, *, reason: str):
         """Warn a member via DMs"""
         warning = (
             f"You have been warned in **{ctx.guild}** by **{ctx.author}** for {reason}"
@@ -237,22 +234,25 @@ class Mod(commands.Cog):
         try:
             await member.send(warning)
         except discord.Forbidden:
-            return await ctx.send(
-                "The user has disabled DMs for this guild or blocked the bot."
-            )
+            raise discord.Forbidden
         await ctx.embed(f"**{member}** has been **warned**")
 
+    @warn_command.error
+    async def warn_command_error(self, ctx, exc):
+        if isinstance(exc, discord.Forbidden):
+            await ctx.error("The user has disabled DMs for this guild or blocked the bot.")
+
     @checks.is_mod()
-    @commands.command()
-    async def removereactions(self, ctx, *, messageid: str):
+    @commands.command(name="removereactions")
+    async def removereactions_command(self, ctx, *, messageid: str):
         """Removes all reactions from a message."""
         message = await ctx.channel.get_message(messageid)
         await message.clear_reactions()
         await ctx.embed("Removed reactions.")
 
     @checks.is_mod()
-    @commands.command()
-    async def hierarchy(self, ctx):
+    @commands.command(name="hierachy")
+    async def hierarchy_command(self, ctx):
         """Lists the role hierarchy of the server."""
         msg = f"Role hierarchy of {ctx.guild}:\n\n"
         roles = {}
@@ -268,24 +268,24 @@ class Mod(commands.Cog):
         await ctx.embed(msg)
 
     @checks.is_mod()
-    @commands.command()
-    async def addrole(self, ctx, member: MemberID, *, rolename: str):
+    @commands.command(name="addrole")
+    async def addrole_command(self, ctx, member: MemberID, *, rolename: str):
         """Adds a specified role to a specified user."""
         role = discord.utils.get(ctx.guild.roles, name=rolename)
         await member.add_roles(role)
         await ctx.embed(f"**{member}** has been given `{role.name}`.")
 
     @checks.is_mod()
-    @commands.command()
-    async def removerole(self, ctx, member: MemberID, *, rolename: str):
+    @commands.command(name="removerole")
+    async def removerole_command(self, ctx, member: MemberID, *, rolename: str):
         """Removes a specified role from a specified user."""
         role = discord.utils.get(ctx.guild.roles, name=rolename)
         await member.remove_roles(role)
         await ctx.send(f"**{member}** has been given `{role.name}`.")
 
     @checks.is_mod()
-    @commands.command()
-    async def purge(self, ctx, *, args: str):
+    @commands.command(name="purge")
+    async def purge_command(self, ctx, *, args: str):
         """An advanced purge command. Available args:
         `--user --contains --starts --ends --search --after --before
         --bot --embeds --files --emoji --reactions --or --not`
@@ -314,9 +314,8 @@ class Mod(commands.Cog):
 
         try:
             args = parser.parse_args(shlex.split(args))
-        except Exception as e:
-            await ctx.send(str(e))
-            return
+        except Exception:
+            raise Exception
 
         predicates = []
         if args.bot:
@@ -342,9 +341,8 @@ class Mod(commands.Cog):
                 try:
                     user = await converter.convert(ctx, u)
                     users.append(user)
-                except Exception as e:
-                    await ctx.send(str(e))
-                    return
+                except Exception:
+                    raise Exception
 
             predicates.append(lambda m: m.author in users)
 
@@ -378,6 +376,11 @@ class Mod(commands.Cog):
         await self.do_removal(
             ctx, args.search, predicate, before=args.before, after=args.after
         )
+
+    @purge_command.error
+    async def purge_command_error(self, ctx, exc):
+        if isinstance(exc, Exception):
+            await ctx.error("An unknown Error occured. Try again.")
 
 
 def setup(bot):

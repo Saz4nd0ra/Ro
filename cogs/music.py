@@ -194,7 +194,7 @@ class Player(wavelink.Player):
                 track = Track(track.id, track.info, requester=ctx.author)
                 self.queue.add(track)
             await ctx.embed(
-                f"Added the playlist {tracks.data['playlistInfo']['name']}"
+                f"Added the playlist {tracks.data['playlistInfo']['name']} "
                 f"with {len(tracks.tracks)} songs to the queue.\n"
             )
         elif len(tracks) == 1:
@@ -314,6 +314,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @commands.command(name="connect", aliases=["join"])
     async def connect_command(self, ctx, *, channel: discord.VoiceChannel):
+        """Connect the player to a channel of your choice."""
         player = self.get_player(ctx)
         channel = await player.connect(ctx, channel)
         await ctx.embed(f"Connected to {channel.name}.")
@@ -327,12 +328,14 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @commands.command(name="disconnect", aliases=["leave"])
     async def disconnect_command(self, ctx):
+        """Disconnect the player."""
         player = self.get_player(ctx)
         await player.teardown()
         await ctx.embed("Disconnected.")
 
     @commands.command(name="play", aliases=["p"])
     async def play_command(self, ctx, *, query: str):
+        """Play a song or playlist. Either enter a search term or a link to the song or playlist.""" 
         player = self.get_player(ctx)
 
         if not player.is_connected:
@@ -464,10 +467,11 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         uris = [track.uri for track in player.queue.upcoming[:10]]
         requester = [track.requester.name for track in player.queue.upcoming[:10]]
 
-        if len(titles) <= 10:
-            upper_limit = len(titles)
-        else:
+
+        if len(titles) >= 10:
             upper_limit = 10
+        else:
+            upper_limit = len(titles)
 
         for i in range(0, upper_limit):
             final_string.append(
@@ -484,15 +488,15 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
             value=f"[{player.queue.current_track.title}]({player.queue.current_track.uri}) | Requested by: {player.queue.current_track.requester.name}\n",
             inline=False,
         )
-        if upcoming := player.queue.upcoming:
+        if len(final_string) == 0:
+            pass
+        else:
             embed.add_field(
                 name="Up next:\n",
-                value="\n".join(f"{string}" for string in final_string),
+                value="".join(f"{string}" for string in final_string),
                 inline=False,
             )
-
         await ctx.send(embed=embed)
-
     @queue_command.error
     async def queue_command_error(self, ctx, exc):
         if isinstance(exc, QueueIsEmpty):

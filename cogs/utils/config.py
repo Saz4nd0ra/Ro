@@ -18,7 +18,7 @@ class Config:
         self.login_token = config["Credentials"]["Token"]
         self.client_id = config["Credentials"]["ClientID"]
 
-        self.owner_id = config["IDs"]["OwnerID"]
+        self.owner_id = config["IDs"]["OwnerID"] # TODO fix IDs and if satements with IDs
         self.dev_ids = config["IDs"]["DevIDs"]
 
         self.default_prefix = config["Bot"]["DefaultPrefix"]
@@ -60,3 +60,4 @@ class UserConfig:
         with open(f"config/guild/{ctx.author.id}.json") as f:
             user_config = json.load(f)
         
+        # TODO all of that

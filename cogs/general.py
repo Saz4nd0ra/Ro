@@ -249,8 +249,8 @@ class General(commands.Cog):
         bot.help_command = PaginatedHelpCommand()
         bot.help_command.cog = self
 
-    @commands.command()
-    async def user(self, ctx, *, user: discord.Member = None):
+    @commands.command(name="user")
+    async def user_command(self, ctx, *, user: discord.Member = None):
         """Get user information"""
         user = user or ctx.author
 
@@ -284,9 +284,9 @@ class General(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(name="serverinfo")
     @commands.guild_only()
-    async def serverinfo(self, ctx, *, guild_id: int = None):
+    async def serverinfo_command(self, ctx, *, guild_id: int = None):
         """Shows info about the current server."""
 
         if guild_id is not None and await self.bot.is_owner(ctx.author):
@@ -419,8 +419,8 @@ class General(commands.Cog):
         embed.add_field(name="Created:", value=guild.created_at)
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def charinfo(self, ctx, *, characters: str):
+    @commands.command(name="charinfo")
+    async def charinfo_command(self, ctx, *, characters: str):
         """Shows you information about a number of characters.
         Only up to 25 characters at a time."""
 
@@ -434,8 +434,8 @@ class General(commands.Cog):
             return await ctx.send("Output too long to display.")
         await ctx.send(msg)
 
-    @commands.command()
-    async def source(self, ctx, *, command: str = None):
+    @commands.command(name="source")
+    async def source_command(self, ctx, *, command: str = None):
         """Displays my full source code or for a specific command."""
         source_url = "https://github.com/Saz4nd0ra/another-discord-bot"
         branch = "dev"
@@ -461,8 +461,8 @@ class General(commands.Cog):
         final_url = f"<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>"
         await ctx.send(final_url)
 
-    @commands.command()
-    async def invite(self, ctx):
+    @commands.command(name="invite")
+    async def invite_command(self, ctx):
         """Joins a server."""
         perms = discord.Permissions.none()
         perms.read_messages = True
