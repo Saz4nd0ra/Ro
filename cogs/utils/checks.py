@@ -53,7 +53,6 @@ async def is_dev(ctx):
         return False
 
 
-
 async def is_nsfw_channel(ctx):
     if ctx.message.guild:
         if ctx.channel.is_nsfw():
@@ -63,4 +62,3 @@ async def is_nsfw_channel(ctx):
             return False
     else:
         return True
-

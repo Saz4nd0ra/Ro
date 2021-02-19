@@ -9,3 +9,4 @@ asyncpraw
 wavelink
 aiohttp
 click
+spotipy

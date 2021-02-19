@@ -39,14 +39,15 @@ class DevCog(commands.Cog):
 
             final_string += guild_config + "\n" + "```"
 
-        
             await ctx.send(final_string)
 
     @commands.command(name="reset_config")
     async def reset_config_command(self, ctx, guild_id: int = None):
         """Resets the config of a given server."""
         if await checks.is_dev(ctx):
-            os.remove(f"config/guild/{ctx.guild.id if guild_id is None else guild_id}.json")
+            os.remove(
+                f"config/guild/{ctx.guild.id if guild_id is None else guild_id}.json"
+            )
 
             shutil.copyfile(
                 "config/example_guild_options.json",

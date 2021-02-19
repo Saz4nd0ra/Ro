@@ -8,6 +8,7 @@ from .embed import Embed
 
 log = logging.getLogger("context")
 
+
 class Context(commands.Context):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -46,7 +47,9 @@ class Context(commands.Context):
             delete_after=auto_delete if auto_delete else auto_delete is None,
         )
         await self.send(embed=embed)
-        log.error(f"An error occured: {message} User: {self.message.author} Guild: {self.message.guild.id}")
+        log.error(
+            f"An error occured: {message} User: {self.message.author} Guild: {self.message.guild.id}"
+        )
 
     async def embed(self, message: str):
         """Sends a quick embed."""

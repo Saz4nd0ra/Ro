@@ -6,14 +6,20 @@ import asyncio
 import datetime as dt
 import random
 import re
+import spotipy
 from enum import Enum
+from spotipy.oauth2 import SpotifyClientCredentials
 from .utils.embed import Embed
 from .utils.context import Context
 from .utils.config import Config
 from .utils import time
 
+SPOTIFY_REG = re.compile(
+    "^(https?://open.spotify.com/(playlist|track)/|spotify:(playlist|track):)([a-zA-Z0-9]+)(.*)$"
+)
 
 URL_REGEX = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+
 OPTIONS = {
     "1️⃣": 0,
     "2⃣": 1,
@@ -64,6 +70,10 @@ class InvalidQueueEntry(commands.CommandError):
 
 
 class InvalidQueuePosition(commands.CommandError):
+    pass
+
+
+class TrackNotFound(Exception):
     pass
 
 
@@ -261,6 +271,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config()
+        self.spotify = Spotify()
         self.wavelink = wavelink.Client(bot=bot)
         self.bot.loop.create_task(self.start_nodes())
 
@@ -337,6 +348,10 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
         if not player.is_connected:
             await player.connect(ctx)
+
+        valid_spotify_link = SPOTIFY_REG.fullmatch(query)
+        if valid_spotify_link:
+            return await self.spotify.play(ctx, player, valid_spotify_link)
 
         query = query.strip("<>")
         if not re.match(URL_REGEX, query):

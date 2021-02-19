@@ -28,6 +28,8 @@ class Config:
         self.ll_host = config["Music"]["LavalinkHost"]
         self.ll_port = config["Music"]["LavalinkPort"]
         self.ll_passwd = config["Music"]["LavalinkPassword"]
+        self.spotify_client_id = config["Music"]["SpotifyClientID"]
+        self.spotify_client_secret = config["Music"]["SpotifyClientSecret"]
 
         self.enable_redditembed = bool(config["Reddit"]["RedditEmbed"])
         self.praw_username = config["Reddit"]["PrawUsername"]
