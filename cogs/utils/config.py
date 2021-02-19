@@ -55,9 +55,9 @@ class UserConfig:
     def __init__(self, ctx):
         if not os.path.exists(f"config/user/{ctx.author.id}.json"):
             shutil.copyfile(
-                "config/guild/example_user_options.json", f"config/user/{ctx.author.id}.json"
+                "config/user/example_user_options.json", f"config/user/{ctx.author.id}.json"
             )
-        with open(f"config/guild/{ctx.author.id}.json") as f:
+        with open(f"config/user/{ctx.author.id}.json") as f:
             user_config = json.load(f)
         
         # TODO all of that

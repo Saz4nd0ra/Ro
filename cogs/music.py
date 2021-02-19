@@ -270,10 +270,6 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
             if not [m for m in before.channel.members if not m.bot]:
                 await self.get_player(member.guild).teardown()
 
-    @wavelink.WavelinkMixin.listener()
-    async def on_node_ready(self, node):
-        print(f" Wavelink node `{node.identifier}` ready.")
-
     @wavelink.WavelinkMixin.listener("on_track_stuck")
     @wavelink.WavelinkMixin.listener("on_track_end")
     @wavelink.WavelinkMixin.listener("on_track_exception")
@@ -532,6 +528,23 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         if isinstance(exc, InvalidQueuePosition):
             await ctx.error("This position is invalid.")
 
+    @commands.command(name="clear")
+    async def clear_command(self, ctx):
+        """Clear the queue."""
+
+        player = self.get_player(ctx)
+
+        if player.queue.is_empty:
+            raise QueueIsEmpty
+
+        player.queue.upcoming = []
+
+        await ctx.embed("Queue successfully cleared.")
+
+    @clear_command.error
+    async def clear_command_error(self, ctx, exc):
+        if isinstance(exc, QueueIsEmpty):
+            await ctx.error("The queue is empty.")
 
 def setup(bot):
     bot.add_cog(Music(bot))
