@@ -76,7 +76,6 @@ class Reddit(commands.Cog):
         await ctx.message.delete()
         await ctx.send(embed=embed)
 
-    @checks.is_nsfw_channel()
     @commands.command()
     async def thighs(self, ctx):
         """Get some thighs from r/thighdeology."""
@@ -86,7 +85,8 @@ class Reddit(commands.Cog):
         )
 
         embed = await self.api.build_embed(ctx, submission)
-        await ctx.send(embed=embed)
+        if await checks.is_nsfw_channel(ctx):
+            await ctx.send(embed=embed)
 
 
 def setup(bot):

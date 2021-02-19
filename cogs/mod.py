@@ -143,7 +143,6 @@ class Mod(commands.Cog):
         else:
             await ctx.embed(to_send)
 
-    @checks.is_mod()
     @commands.command(name="kick")
     async def kick_command(self, ctx, member: MemberID, *, reason: ActionReason = None):
         """Kicks a member from the server."""
@@ -151,10 +150,10 @@ class Mod(commands.Cog):
         if reason is None:
             reason = f"Action done by {ctx.author} (ID: {ctx.author.id})"
 
-        await ctx.guild.kick(member, reason=reason)
-        await ctx.embed(f"**{member}** was kicked.")
+        if await checks.is_mod(ctx):
+            await ctx.guild.kick(member, reason=reason)
+            await ctx.embed(f"**{member}** was kicked.")
 
-    @checks.is_mod()
     @commands.command(name="ban")
     async def ban_command(self, ctx, member: MemberID, *, reason: ActionReason = None):
         """Bans a member from the server."""
@@ -162,10 +161,10 @@ class Mod(commands.Cog):
         if reason is None:
             reason = f"Action done by {ctx.author} (ID: {ctx.author.id})"
 
-        await ctx.guild.ban(member, reason=reason)
-        await ctx.embed(f"**{member}** was banned.")
+        if await checks.is_mod(ctx):
+            await ctx.guild.ban(member, reason=reason)
+            await ctx.embed(f"**{member}** was banned.")
 
-    @checks.is_mod()
     @commands.command(name="unban")
     async def unban_command(
         self, ctx, member: BannedMember, *, reason: ActionReason = None
@@ -175,15 +174,15 @@ class Mod(commands.Cog):
         if reason is None:
             reason = f"Action done by {ctx.author} (ID: {ctx.author.id})"
 
-        await ctx.guild.unban(member.user, reason=reason)
-        if member.reason:
-            await ctx.embed(
-                f"Unbanned {member.user} (ID: {member.user.id}), previously banned for {member.reason}."
-            )
-        else:
-            await ctx.embed(f"Unbanned {member.user} (ID: {member.user.id}).")
+        if await checks.is_mod(ctx):
+            await ctx.guild.unban(member.user, reason=reason)
+            if member.reason:
+                await ctx.embed(
+                    f"Unbanned {member.user} (ID: {member.user.id}), previously banned for {member.reason}."
+                )
+            else:
+                await ctx.embed(f"Unbanned {member.user} (ID: {member.user.id}).")
 
-    @checks.is_mod()
     @commands.command(name="softban")
     async def softban_command(
         self, ctx, member: MemberID, *, reason: ActionReason = None
@@ -193,54 +192,55 @@ class Mod(commands.Cog):
         if reason is None:
             reason = f"Action done by {ctx.author} (ID: {ctx.author.id})"
 
-        await ctx.guild.ban(member, reason=reason)
-        await ctx.guild.unban(member, reason=reason)
-        await ctx.embed(f"**{member}** was softbanned.")
+        if await checks.is_mod(ctx):
+            await ctx.guild.ban(member, reason=reason)
+            await ctx.guild.unban(member, reason=reason)
+            await ctx.embed(f"**{member}** was softbanned.")
 
-    @checks.is_mod()
     @commands.command(name="mute")
     async def mute_command(self, ctx, member: MemberID, time: int = 15):
         """Mute a member in the guild"""
         secs = time * 60
-        for channel in ctx.guild.channels:  # muting
-            if isinstance(channel, discord.TextChannel):
-                await ctx.channel.set_permissions(member, send_messages=False)
-            elif isinstance(channel, discord.VoiceChannel):
-                await channel.set_permissions(member, connect=False)
-        await ctx.embed(f"**{member}** has been muted for {time} minutes.")
-        await asyncio.sleep(secs)
-        for channel in ctx.guild.channels:  # unmuting
-            if isinstance(channel, discord.TextChannel):
-                await ctx.channel.set_permissions(member, send_messages=None)
-            elif isinstance(channel, discord.VoiceChannel):
-                await channel.set_permissions(member, connect=None)
-        await ctx.embed(f"**{member}** has been unmuted from the guild.")
+        if await checks.is_mod(ctx):
+            for channel in ctx.guild.channels:  # muting
+                if isinstance(channel, discord.TextChannel):
+                    await ctx.channel.set_permissions(member, send_messages=False)
+                elif isinstance(channel, discord.VoiceChannel):
+                    await channel.set_permissions(member, connect=False)
+            await ctx.embed(f"**{member}** has been muted for {time} minutes.")
+            await asyncio.sleep(secs)
+            for channel in ctx.guild.channels:  # unmuting
+                if isinstance(channel, discord.TextChannel):
+                    await ctx.channel.set_permissions(member, send_messages=None)
+                elif isinstance(channel, discord.VoiceChannel):
+                    await channel.set_permissions(member, connect=None)
+            await ctx.embed(f"**{member}** has been unmuted from the guild.")
 
-    @checks.is_mod()
     @commands.command(name="unmute")
     async def unmute_command(self, ctx, member: MemberID):
         """Unmute a member in the guild"""
-        for channel in ctx.guild.channels:
-            if isinstance(channel, discord.TextChannel):
-                await ctx.channel.set_permissions(member, send_messages=None)
-            elif isinstance(channel, discord.VoiceChannel):
-                await channel.set_permissions(member, connect=None)
-        await ctx.embed(f"**{member}** has been unmuted from the guild.")
+        if await checks.is_mod(ctx):
+            for channel in ctx.guild.channels:
+                if isinstance(channel, discord.TextChannel):
+                    await ctx.channel.set_permissions(member, send_messages=None)
+                elif isinstance(channel, discord.VoiceChannel):
+                    await channel.set_permissions(member, connect=None)
+            await ctx.embed(f"**{member}** has been unmuted from the guild.")
 
-    @checks.is_mod()
     @commands.command(name="warn")
     async def warn_command(self, ctx, member: MemberID, *, reason: str):
         """Warn a member via DMs"""
         warning = (
             f"You have been warned in **{ctx.guild}** by **{ctx.author}** for {reason}"
         )
-        if not reason:
-            warning = f"You have been warned in **{ctx.guild}** by **{ctx.author}**"
-        try:
-            await member.send(warning)
-        except discord.Forbidden:
-            raise discord.Forbidden
-        await ctx.embed(f"**{member}** has been **warned**")
+        if await checks.is_mod(ctx):
+            if not reason:
+                warning = f"You have been warned in **{ctx.guild}** by **{ctx.author}**"
+            try:
+                await member.send(warning)
+            except discord.Forbidden:
+                raise discord.Forbidden
+            await ctx.embed(f"**{member}** has been **warned**")
 
     @warn_command.error
     async def warn_command_error(self, ctx, exc):
@@ -249,15 +249,14 @@ class Mod(commands.Cog):
                 "The user has disabled DMs for this guild or blocked the bot."
             )
 
-    @checks.is_mod()
     @commands.command(name="removereactions")
     async def removereactions_command(self, ctx, *, messageid: str):
         """Removes all reactions from a message."""
-        message = await ctx.channel.get_message(messageid)
-        await message.clear_reactions()
-        await ctx.embed("Removed reactions.")
+        if await checks.is_mod(ctx):
+            message = await ctx.channel.get_message(messageid)
+            await message.clear_reactions()
+            await ctx.embed("Removed reactions.")
 
-    @checks.is_mod()
     @commands.command(name="hierachy")
     async def hierarchy_command(self, ctx):
         """Lists the role hierarchy of the server."""
@@ -274,23 +273,22 @@ class Mod(commands.Cog):
             msg += role[1] + "\n"
         await ctx.embed(msg)
 
-    @checks.is_mod()
     @commands.command(name="addrole")
     async def addrole_command(self, ctx, member: MemberID, *, rolename: str):
         """Adds a specified role to a specified user."""
         role = discord.utils.get(ctx.guild.roles, name=rolename)
-        await member.add_roles(role)
-        await ctx.embed(f"**{member}** has been given `{role.name}`.")
+        if await checks.is_mod(ctx):
+            await member.add_roles(role)
+            await ctx.embed(f"**{member}** has been given `{role.name}`.")
 
-    @checks.is_mod()
     @commands.command(name="removerole")
     async def removerole_command(self, ctx, member: MemberID, *, rolename: str):
         """Removes a specified role from a specified user."""
         role = discord.utils.get(ctx.guild.roles, name=rolename)
-        await member.remove_roles(role)
-        await ctx.send(f"**{member}** has been given `{role.name}`.")
+        if await checks.is_mod(ctx):
+            await member.remove_roles(role)
+            await ctx.send(f"**{member}** has been given `{role.name}`.")
 
-    @checks.is_mod()
     @commands.command(name="purge")
     async def purge_command(self, ctx, *, args: str):
         """An advanced purge command. Available args:
@@ -380,9 +378,10 @@ class Mod(commands.Cog):
             args.search = 100
 
         args.search = max(0, min(2000, args.search))  # clamp from 0-2000
-        await self.do_removal(
-            ctx, args.search, predicate, before=args.before, after=args.after
-        )
+        if await checks.is_mod(ctx):
+            await self.do_removal(
+                ctx, args.search, predicate, before=args.before, after=args.after
+            )
 
     @purge_command.error
     async def purge_command_error(self, ctx, exc):

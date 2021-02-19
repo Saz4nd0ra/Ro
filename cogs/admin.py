@@ -17,7 +17,6 @@ class Admin(commands.Cog):
         self.bot = bot
         self.config = Config()
 
-    @checks.is_admin()
     @commands.command(name="config")
     async def config_command(self, ctx, category: str, option: str, new_value):
         """Change the server config for your guild."""
