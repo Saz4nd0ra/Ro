@@ -10,6 +10,7 @@ from enum import Enum
 from .utils.embed import Embed
 from .utils.context import Context
 from .utils.config import Config
+from .utils import time
 
 
 URL_REGEX = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
@@ -467,10 +468,10 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         uris = [track.uri for track in player.queue.upcoming[:10]]
         requester = [track.requester.name for track in player.queue.upcoming[:10]]
 
-        length = 0
+        queue_length_time = 0
 
         for track in player.queue.upcoming:
-            length += track.length
+            queue_length_time += track.length
 
         if len(titles) >= 10:
             upper_limit = 10
@@ -488,9 +489,8 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
                        f"[{player.queue.current_track.title}]({player.queue.current_track.uri}) | Requested by: {player.queue.current_track.requester.name}\n\n"
                         "**Up next:\n\n**"
                        f"{final_string}"
-                       f"{len(player.queue.upcoming)} songs in queue | Total length: {"
+                       f"**{len(player.queue.upcoming)} songs in queue | {time.convertMilliseconds(queue_length_time)} total length**"
         )
-        print(len(embed.description))
         await ctx.send(embed=embed)
     @queue_command.error
     async def queue_command_error(self, ctx, exc):

@@ -4,7 +4,7 @@ from discord.ext import commands, menus
 from .utils.embed import Embed
 from .utils.config import Config
 from .utils.paginator import ADBPages
-from .utils import formats
+from .utils import formats, time
 from collections import Counter
 import asyncio
 import arrow
@@ -277,8 +277,8 @@ class General(commands.Cog):
             ("Username:", f"{user}"),
             ("Nickname:", f"{nick}"),
             ("ID:", f"{user.id}"),
-            ("Created:", f"{humanize.naturaldate(user.created_at)}"),
-            ("Joined:", f"{humanize.naturaldate(user.joined_at)}"),
+            ("Created:", f"{time.convertUTCtoHuman(user.created_at)}"),
+            ("Joined:", f"{time.convertUTCtoHuman(user.joined_at)}"),
             ("Roles:", f"{show_roles}"),
         )
 
@@ -411,7 +411,7 @@ class General(commands.Cog):
 
         fmt = f"{fmt}Total Emoji: {len(guild.emojis)}/{guild.emoji_limit*2}"
         embed.add_field(name="Emoji", value=fmt, inline=False)
-        embed.add_field(name="Created:", value=guild.created_at)
+        embed.add_field(name="Created:", value=time.convertUTCtoHuman(guild.created_at))
         await ctx.send(embed=embed)
 
     @commands.command(name="charinfo")
