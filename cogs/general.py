@@ -7,7 +7,6 @@ from .utils.paginator import ADBPages
 from .utils import formats, time
 from collections import Counter
 import asyncio
-import arrow
 import unicodedata
 import inspect
 import os
