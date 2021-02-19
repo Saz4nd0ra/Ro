@@ -17,19 +17,18 @@ class Admin(commands.Cog):
         self.config = Config()
 
     @checks.is_admin()
-    @commands.command(name="disconnect")
-    async def config_command(self, ctx, *, category: str, option: str, new_value):
+    @commands.command(name="config")
+    async def config_command(self, ctx, category: str, option: str, new_value):
         """Change the server config for your guild."""
 
-        guild_config = GuildConfig(ctx.guild)
+        
 
-        setting = guild_config[category][option]
+        await ctx.embed("Config changed.")
 
-        if (type(setting) != type(new_value)):
-            raise TypesNotEqual
-
-    @config_command_error
+    @config_command.error
     async def config_command_error(self, ctx, exc):
         if isinstance(exc, TypesNotEqual):
             await ctx.error("The types of the setting and your new value don't match.")
 
+def setup(bot):
+    bot.add_cog(Admin(bot))

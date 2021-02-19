@@ -24,7 +24,8 @@ initial_extensions = (
     "cogs.nsfw",
     "cogs.reddit",
     "cogs.automod",
-    "cogs.devcog"
+    "cogs.devcog",
+    "cogs.admin"
 )
 
 
