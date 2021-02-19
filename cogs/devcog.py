@@ -48,7 +48,7 @@ class DevCog(commands.Cog):
         os.remove(f"config/guild/{ctx.guild.id if guild_id is None else guild_id}.json")
 
         shutil.copyfile(
-                "config/guild/example_guild_options.json", f"config/guild/{ctx.guild.id if guild_id is None else guild_id}.json"
+                "config/example_guild_options.json", f"config/guild/{ctx.guild.id if guild_id is None else guild_id}.json"
             )
 
         await ctx.embed("File deleted and reseted")

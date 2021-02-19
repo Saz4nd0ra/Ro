@@ -38,7 +38,7 @@ class GuildConfig:
     def __init__(self, guild):
         if not os.path.exists(f"config/guild/{guild.id}.json"):
             shutil.copyfile(
-                "config/guild/example_guild_options.json", f"config/guild/{guild.id}.json"
+                "config/example_guild_options.json", f"config/guild/{guild.id}.json"
             )
         with open(f"config/guild/{guild.id}.json") as f:
             guild_config = json.load(f)
@@ -55,7 +55,7 @@ class UserConfig:
     def __init__(self, ctx):
         if not os.path.exists(f"config/user/{ctx.author.id}.json"):
             shutil.copyfile(
-                "config/user/example_user_options.json", f"config/user/{ctx.author.id}.json"
+                "config/example_user_options.json", f"config/user/{ctx.author.id}.json"
             )
         with open(f"config/user/{ctx.author.id}.json") as f:
             user_config = json.load(f)

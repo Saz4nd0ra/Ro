@@ -132,6 +132,8 @@ dmypy.json
 # config stuff
 
 config/options.ini
+config/guild
+config/user
 .idea/
 .vs/
 .vscode/
