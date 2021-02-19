@@ -14,11 +14,11 @@ from .utils.context import Context
 from .utils.config import Config
 from .utils import time
 
-SPOTIFY_REG = re.compile(
-    "^(https?://open.spotify.com/(playlist|track)/|spotify:(playlist|track):)([a-zA-Z0-9]+)(.*)$"
-)
-
-URL_REGEX = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+SPOTIFY_TRACK_URL_REGEX = r"[\bhttps://open.\b]*spotify[\b.com\b]*[/:]*track[/:]*[A-Za-z0-9?=]+"
+SPOTIFY_PLAYLIST_URL_REGEX = r"[\bhttps://open.\b]*spotify[\b.com\b]*[/:]*playlist[/:]*[A-Za-z0-9?=]+"
+SPOTIFY_ALBUM_URL_REGEX = r"[\bhttps://open.\b]*spotify[\b.com\b]*[/:]*track[/:]*[A-Za-z0-9?=]+"
+YOUTUBE_URL_REGEX = r"(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/"\
+                    r"(?:watch|v|embed)(?:\.php)?(?:\?.*v=|\/))([a-zA-Z0-9\_-]+)"
 
 OPTIONS = {
     "1️⃣": 0,
@@ -73,6 +73,10 @@ class InvalidQueuePosition(commands.CommandError):
     pass
 
 
+class QueryError(commands.CommandError):
+    pass
+
+
 class TrackNotFound(Exception):
     pass
 
@@ -81,6 +85,37 @@ class RepeatMode(Enum):
     NONE = 0
     ONE = 1
     ALL = 2
+
+
+class Spotify:
+    def __init__(self):
+        self.config = Config()
+        self.credentials_manager = SpotifyClientCredentials(self.config.spotify_client_id, self.config.spotify_client_secret)
+        self.sp = spotipy.Spotify(
+            client_credentials_manager=self.credentials_manager)
+
+    async def get_track(self, url: str):
+        """Gets a single track from Spotify."""
+        track = self.sp.track(url)
+        return track["name"] + track["artists"][0]["name"]
+
+    async def get_tracks(self, url: str):
+        """Gets a single track from Spotify."""
+        results = self.sp.playlist_tracks(url)
+        
+        tracks = results["items"]
+
+        while results["next"]:
+            results = self.sp.next(results)
+            tracks.extend(results["items"])
+
+        tracks_list = list()
+        for track in tracks:
+            if track["track"]:
+                tracks_list.append(track["track"]["name"] + track["track"]["artists"][0]["name"])
+
+        return tracks_list
+
 
 
 class Track(wavelink.Track):
@@ -201,57 +236,49 @@ class Player(wavelink.Player):
             raise NoTracksFound
 
         if isinstance(tracks, wavelink.TrackPlaylist):
+            queue = []
             for track in tracks.tracks:
-                track = Track(track.id, track.info, requester=ctx.author)
-                self.queue.add(track)
-            await ctx.embed(
-                f"Added the playlist {tracks.data['playlistInfo']['name']} "
-                f"with {len(tracks.tracks)} songs to the queue.\n"
-            )
-        elif len(tracks) == 1:
+                Track(track.id, track.info, requester=ctx.author)
+                queue.append(track)
+            embed = Embed(ctx, title="Playlist added to queue", description=f"Added {len(queue)} tracks to the queue.", thumbnail=queue[0].thumb)
+            await ctx.send(embed=embed)
+
+        else:
             track = Track(tracks[0].id, tracks[0].info, requester=ctx.author)
             self.queue.add(track)
-            await ctx.embed(f"Added {track.title} to the queue.")
-        else:
-            if (chosen_track := await self.choose_track(ctx, tracks)) is not None:
-                track = Track(chosen_track.id, chosen_track.info, requester=ctx.author)
-                self.queue.add(track)
-                await ctx.embed(f"Added {track.title} to the queue.")
+            if self.queue.length == 0:
+                embed = Embed(
+                    ctx,
+                    title="Song added to queue",
+                    description=f"Now playing [{track.title}]({track.uri})",
+                    thumbnail=track.thumb)
+                await ctx.send(embed=embed)
+            else:
+                embed = Embed(
+                    ctx,
+                    title="Song added to queue",
+                    description=f"Added [{track.title}]({track.uri}) to the queue.",
+                    thumbnail=track.thumb
+                    )
+                await ctx.send(embed=embed)
 
         if not self.is_playing and not self.queue.is_empty:
             await self.start_playback()
 
-    async def choose_track(self, ctx, tracks):
-        def _check(r, u):
-            return (
-                r.emoji in OPTIONS.keys() and u == ctx.author and r.message.id == msg.id
-            )
-
+    async def search_tracks(self, ctx, tracks):
         embed = Embed(
             ctx,
-            title="Choose a song",
+            title=f"Search for music",
             description=(
                 "\n".join(
-                    f"**{i+1}.** {t.title} ({t.length//60000}:{str(t.length%60).zfill(2)})"
-                    for i, t in enumerate(tracks[:5])
-                )
+                    f"[{t.title}](https://www.youtube.com/watch?v={t.ytid}) "
+                    f"({t.length // 60000}:{str(t.length % 60).zfill(2)})"
+                    for t in tracks[:15])
             ),
+            thumbnail=tracks[0].thumb
         )
 
-        msg = await ctx.send(embed=embed)
-        for emoji in list(OPTIONS.keys())[: min(len(tracks), len(OPTIONS))]:
-            await msg.add_reaction(emoji)
-
-        try:
-            reaction, _ = await self.bot.wait_for(
-                "reaction_add", timeout=60.0, check=_check
-            )
-        except asyncio.TimeoutError:
-            await msg.delete()
-            await ctx.message.delete()
-        else:
-            await msg.delete()
-            return tracks[OPTIONS[reaction.emoji]]
+        await ctx.send(embed=embed)
 
     async def start_playback(self):
         await self.play(self.queue.current_track)
@@ -349,22 +376,47 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         if not player.is_connected:
             await player.connect(ctx)
 
-        valid_spotify_link = SPOTIFY_REG.fullmatch(query)
-        if valid_spotify_link:
-            return await self.spotify.play(ctx, player, valid_spotify_link)
 
-        query = query.strip("<>")
-        if not re.match(URL_REGEX, query):
+        if re.search(SPOTIFY_TRACK_URL_REGEX, query):
+            track = await self.spotify.get_track(query)
+            query = f"ytsearch:{track}"
+        elif re.search(SPOTIFY_PLAYLIST_URL_REGEX, query):
+            spotify_tracks = await self.spotify.get_tracks(query)
+            first_track = await self.wavelink.get_tracks(f"ytsearch:{spotify_tracks[0]}")
+            first_track = first_track[0]
+            playlist_length = len(tracks)
+            player.queue.add(first_track)
+            tracks.pop(0)
+            for track in tracks:
+                query = f"ytsearch:{track}"
+                track = await self.wavelink.get_tracks(f"ytsearch:{track}")
+                track = track[0]
+                player.queue.append(track)
+            embed = Embed(ctx, title="Playlist added to queue", description=f"Added {playlist_length} tracks to the queue.", thumbnail=first_track.thumb)
+            await ctx.send(embed=embed)
+        elif not re.search(YOUTUBE_URL_REGEX, query):
+            print(4)
+            query = query.strip("<>")
             query = f"ytsearch:{query}"
-
+            
         await player.add_tracks(ctx, await self.wavelink.get_tracks(query))
 
     @play_command.error
     async def play_command_error(self, ctx, exc):
-        if isinstance(exc, QueueIsEmpty):
-            await ctx.error("The queue is empty.")
+        if isinstance(exc, QueryError):
+            await ctx.error("There was an error with your query")
         elif isinstance(exc, NoVoiceChannel):
             await ctx.error("No suitable voice channel was provided.")
+
+    @commands.command(name='search')
+    async def search(self, ctx, *, query):
+        """Search for a song on Youtube or SoundCloud."""
+        player = self.get_player(ctx)
+        query = query.strip("<>")
+        if not re.match(YOUTUBE_URL_REGEX, query):
+            query = f"ytsearch:{query}"
+
+        await player.search_tracks(ctx, await self.wavelink.get_tracks(query))
 
     @commands.command(name="pause")
     async def pause_command(self, ctx):
