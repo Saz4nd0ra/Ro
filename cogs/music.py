@@ -238,8 +238,9 @@ class Player(wavelink.Player):
         if isinstance(tracks, wavelink.TrackPlaylist):
             queue = []
             for track in tracks.tracks:
-                Track(track.id, track.info, requester=ctx.author)
+                track = Track(track.id, track.info, requester=ctx.author)
                 queue.append(track)
+                self.queue.add(track)
             embed = Embed(ctx, title="Playlist added to queue", description=f"Added {len(queue)} tracks to the queue.", thumbnail=queue[0].thumb)
             await ctx.send(embed=embed)
 
@@ -384,14 +385,14 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
             spotify_tracks = await self.spotify.get_tracks(query)
             first_track = await self.wavelink.get_tracks(f"ytsearch:{spotify_tracks[0]}")
             first_track = first_track[0]
-            playlist_length = len(tracks)
+            playlist_length = len(spotify_tracks)
             player.queue.add(first_track)
-            tracks.pop(0)
-            for track in tracks:
-                query = f"ytsearch:{track}"
-                track = await self.wavelink.get_tracks(f"ytsearch:{track}")
-                track = track[0]
-                player.queue.append(track)
+            spotify_tracks.pop(0)
+            for i in range(0, len(spotify_tracks) - 1):
+                query = f"ytsearch:{spotify_tracks[i]}"
+                track = await self.wavelink.get_tracks(f"ytsearch:{query}")
+                track = Track(track[0].id, track[0].info, requester=ctx.author)
+                player.queue.add(track)
             embed = Embed(ctx, title="Playlist added to queue", description=f"Added {playlist_length} tracks to the queue.", thumbnail=first_track.thumb)
             await ctx.send(embed=embed)
         elif not re.search(YOUTUBE_URL_REGEX, query):
