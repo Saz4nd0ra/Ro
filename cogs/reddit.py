@@ -31,17 +31,24 @@ class Reddit(commands.Cog):
         user = await self.api.get_redditor(redditor_name=name)
 
         if getattr(user, "is_suspended", False):
-            embed = Embed(ctx, title=f"u/{user.name}", description="This user is suspended.")
+            embed = Embed(
+                ctx, title=f"u/{user.name}", description="This user is suspended."
+            )
         else:
-            embed = Embed(ctx, title=f"u/{user.name}", thumbnail=user.icon_img, url=f"https://reddit.com/u/{user.name}")
+            embed = Embed(
+                ctx,
+                title=f"u/{user.name}",
+                thumbnail=user.icon_img,
+                url=f"https://reddit.com/u/{user.name}",
+            )
             embed.add_fields(
                 ("Comment Karma:", f"{user.comment_karma}"),
                 ("Post Karma:", f"{user.link_karma}"),
                 ("Created at:", f"{user.created_utc}"),
                 ("Is verified:", "Yes" if user.has_verified_email else "No"),
                 ("Is moderator:", "Yes" if user.is_mod else "No"),
-                ("Is gold:", "Yes" if user.is_gold else "No"))
-
+                ("Is gold:", "Yes" if user.is_gold else "No"),
+            )
 
         await ctx.send(embed=embed)
 
@@ -55,11 +62,13 @@ class Reddit(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def embedify(self, ctx, * , url: str):
+    async def embedify(self, ctx, *, url: str):
         """Embedify a reddit post. Use in case the automatic embedifier is deactivated."""
         if self.config.enable_redditembed == True:
-            await ctx.error("Reddit embeds are enabled. Just share the link without using the command next time!")
-        
+            await ctx.error(
+                "Reddit embeds are enabled. Just share the link without using the command next time!"
+            )
+
         submission = await self.api.get_submission_from_url(url)
 
         embed = await self.api.build_embed(ctx, submission)
@@ -72,12 +81,13 @@ class Reddit(commands.Cog):
     async def thighs(self, ctx):
         """Get some thighs from r/thighdeology."""
 
-        submission = await self.api.get_submission(subreddit_name="thighdeology", sorting="hot")
+        submission = await self.api.get_submission(
+            subreddit_name="thighdeology", sorting="hot"
+        )
 
         embed = await self.api.build_embed(ctx, submission)
         await ctx.send(embed=embed)
-        
-        
+
 
 def setup(bot):
     bot.add_cog(Reddit(bot))

@@ -5,9 +5,7 @@ from typing import Tuple
 
 class Embed(discord.Embed):
     def __init__(self, ctx, title, colour=0x7289DA, **kwargs):
-        super(Embed, self).__init__(
-            colour=colour, **kwargs
-        )
+        super(Embed, self).__init__(colour=colour, **kwargs)
 
         self.timestamp = ctx.message.created_at
 
@@ -26,15 +24,13 @@ class Embed(discord.Embed):
 
         if kwargs.get("url"):
             self.set_author(
-                name=title,
-                icon_url=ctx.author.avatar_url,
-                url=kwargs.get("url")
+                name=title, icon_url=ctx.author.avatar_url, url=kwargs.get("url")
             )
         else:
             self.set_author(
                 name=title,
                 icon_url=ctx.author.avatar_url,
-                url="https://github.com/Saz4nd0ra/another-discord-bot"
+                url="https://github.com/Saz4nd0ra/another-discord-bot",
             )
 
     def add_fields(self, *fields: Tuple[str, str]):

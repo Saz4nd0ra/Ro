@@ -24,7 +24,9 @@ class AutoMod(commands.Cog):
         """Catch reddit links, check them, and then return them as an embed."""
         ctx = await self.bot.get_context(message, cls=Context)
         if self.config.enable_redditembed:
-            if any(x in message.content for x in REDDIT_DOMAINS) and not message.content.startswith(str(ctx.prefix)):
+            if any(
+                x in message.content for x in REDDIT_DOMAINS
+            ) and not message.content.startswith(str(ctx.prefix)):
                 reddit_url = message.content
                 submission = await self.reddit.get_submission_from_url(reddit_url)
                 if submission.over_18 and not message.channel.is_nsfw():
@@ -43,19 +45,26 @@ class AutoMod(commands.Cog):
 
         guild_config = GuildConfig(guild)
 
-        embed = discord.Embed(description=f"Your current Server prefix is: {guild_config.guild_prefix}", colour=0x7289DA)
+        embed = discord.Embed(
+            description=f"Your current Server prefix is: {guild_config.guild_prefix}",
+            colour=0x7289DA,
+        )
 
-        embed.add_field(name="For help:", value=f"Use {guild_config.guild_prefix}help to get an overlook of all available commands.")
+        embed.add_field(
+            name="For help:",
+            value=f"Use {guild_config.guild_prefix}help to get an overlook of all available commands.",
+        )
         embed.set_footer(
             text="Saz4nd0ra/another-discord-bot",
-            icon_url="https://cdn3.iconfinder.com/data/icons/popular-services-brands/512/github-512.png"
+            icon_url="https://cdn3.iconfinder.com/data/icons/popular-services-brands/512/github-512.png",
         )
         embed.set_author(
-                name="Thanks for inviting me!",
-                icon_url=self.bot.user.avatar_url,
-                url="https://github.com/Saz4nd0ra/another-discord-bot"
-            )
+            name="Thanks for inviting me!",
+            icon_url=self.bot.user.avatar_url,
+            url="https://github.com/Saz4nd0ra/another-discord-bot",
+        )
         await guild.text_channels[0].send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(AutoMod(bot))

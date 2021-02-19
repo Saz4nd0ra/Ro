@@ -332,7 +332,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @commands.command(name="play", aliases=["p"])
     async def play_command(self, ctx, *, query: str):
-        """Play a song or playlist. Either enter a search term or a link to the song or playlist.""" 
+        """Play a song or playlist. Either enter a search term or a link to the song or playlist."""
         player = self.get_player(ctx)
 
         if not player.is_connected:
@@ -380,7 +380,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @resume_command.error
     async def resume_command_error(self, ctx, exc):
-        if isinstance(exc, PlayIsNotPaused):
+        if isinstance(exc, PlayerIsNotPaused):
             await ctx.error("Player is not paused.")
 
     @commands.command(name="stop")
@@ -475,19 +475,22 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
             upper_limit = len(titles)
 
         for i in range(0, upper_limit):
-            final_string += f"{i + 1}. [{titles[i]}]({uris[i]}) | Requested by: {requester[i]}\n\n"
-        
+            final_string += (
+                f"{i + 1}. [{titles[i]}]({uris[i]}) | Requested by: {requester[i]}\n\n"
+            )
 
         embed = Embed(
             ctx,
             title=f"Queue for {ctx.channel.name}",
             description="**Now Playing:**\n\n"
-                       f"[{player.queue.current_track.title}]({player.queue.current_track.uri}) | Requested by: {player.queue.current_track.requester.name}\n\n"
-                        "**Up next:\n\n**"
-                       f"{final_string}"
-                       f"**{len(player.queue.upcoming)} songs in queue | {time.convertMilliseconds(queue_length_time)} total length**"
+            f"[{player.queue.current_track.title}]({player.queue.current_track.uri}) | Requested by: {player.queue.current_track.requester.name}\n\n"
+            "**Up next:\n\n**"
+            f"{final_string}"
+            f"**{len(player.queue.upcoming)} songs in queue | {time.convertMilliseconds(queue_length_time)} total length**",
         )
+
         await ctx.send(embed=embed)
+
     @queue_command.error
     async def queue_command_error(self, ctx, exc):
         if isinstance(exc, QueueIsEmpty):
@@ -545,6 +548,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
     async def clear_command_error(self, ctx, exc):
         if isinstance(exc, QueueIsEmpty):
             await ctx.error("The queue is empty.")
+
 
 def setup(bot):
     bot.add_cog(Music(bot))

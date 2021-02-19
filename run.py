@@ -21,6 +21,7 @@ except ImportError:
 else:
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
+
 class RemoveNoise(logging.Filter):
     def __init__(self):
         super().__init__(name="discord.state")
@@ -30,34 +31,43 @@ class RemoveNoise(logging.Filter):
             return False
         return True
 
+
 def setup_folders():
     if not os.path.exists("config/guild/"):
-            os.mkdir("config/guild")
-            print("config/guild folder created....")
+        os.mkdir("config/guild")
+        print("config/guild folder created....")
 
     if not os.path.exists("config/user/"):
-            os.mkdir("config/user")
-            print("config/user folder created....")
+        os.mkdir("config/user")
+        print("config/user folder created....")
 
     if not os.path.exists("logs/"):
-            os.mkdir("logs/")
-            print("logs/ folder created....")
-    
+        os.mkdir("logs/")
+        print("logs/ folder created....")
+
 
 @contextlib.contextmanager
 def setup_logging():
     try:
         # __enter__
-        max_bytes = 32 * 1024 * 1024 # 32 MiB
+        max_bytes = 32 * 1024 * 1024  # 32 MiB
         logging.getLogger("discord").setLevel(logging.INFO)
         logging.getLogger("discord.http").setLevel(logging.WARNING)
         logging.getLogger("discord.state").addFilter(RemoveNoise())
 
         log = logging.getLogger()
         log.setLevel(logging.INFO)
-        handler = RotatingFileHandler(filename="logs/adb.log", encoding="utf-8", mode="w", maxBytes=max_bytes, backupCount=5)
+        handler = RotatingFileHandler(
+            filename="logs/adb.log",
+            encoding="utf-8",
+            mode="w",
+            maxBytes=max_bytes,
+            backupCount=5,
+        )
         dt_fmt = "%Y-%m-%d %H:%M:%S"
-        fmt = logging.Formatter("[{asctime}] [{levelname:<7}] {name}: {message}", dt_fmt, style="{")
+        fmt = logging.Formatter(
+            "[{asctime}] [{levelname:<7}] {name}: {message}", dt_fmt, style="{"
+        )
         handler.setFormatter(fmt)
         log.addHandler(handler)
 
@@ -68,6 +78,7 @@ def setup_logging():
         for hdlr in handlers:
             hdlr.close()
             log.removeHandler(hdlr)
+
 
 def run_bot():
     loop = asyncio.get_event_loop()
@@ -81,6 +92,7 @@ def run_bot():
     bot = ADB()
     bot.run()
 
+
 @click.group(invoke_without_command=True, options_metavar="[options]")
 @click.pass_context
 def main(ctx):
@@ -91,6 +103,7 @@ def main(ctx):
         with setup_logging():
             setup_folders()
             run_bot()
+
 
 if __name__ == "__main__":
     main()

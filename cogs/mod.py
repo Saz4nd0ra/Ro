@@ -62,6 +62,7 @@ class MemberID(commands.Converter):
             )
         return m
 
+
 class ActionReason(commands.Converter):
     async def convert(self, ctx, argument):
         ret = f"{ctx.author} (ID: {ctx.author.id}): {argument}"
@@ -166,7 +167,9 @@ class Mod(commands.Cog):
 
     @checks.is_mod()
     @commands.command(name="unban")
-    async def unban_command(self, ctx, member: BannedMember, *, reason: ActionReason = None):
+    async def unban_command(
+        self, ctx, member: BannedMember, *, reason: ActionReason = None
+    ):
         """Unbans a member from the server."""
 
         if reason is None:
@@ -182,7 +185,9 @@ class Mod(commands.Cog):
 
     @checks.is_mod()
     @commands.command(name="softban")
-    async def softban_command(self, ctx, member: MemberID, *, reason: ActionReason = None):
+    async def softban_command(
+        self, ctx, member: MemberID, *, reason: ActionReason = None
+    ):
         """Soft bans a member from the server."""
 
         if reason is None:
@@ -240,7 +245,9 @@ class Mod(commands.Cog):
     @warn_command.error
     async def warn_command_error(self, ctx, exc):
         if isinstance(exc, discord.Forbidden):
-            await ctx.error("The user has disabled DMs for this guild or blocked the bot.")
+            await ctx.error(
+                "The user has disabled DMs for this guild or blocked the bot."
+            )
 
     @checks.is_mod()
     @commands.command(name="removereactions")

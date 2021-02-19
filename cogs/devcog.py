@@ -29,7 +29,9 @@ class DevCog(commands.Cog):
     async def print_config_command(self, ctx, guild_id: int = None):
         """Prints the config of a server."""
 
-        with open(f"config/guild/{ctx.guild.id if guild_id is None else guild_id}.json") as f:
+        with open(
+            f"config/guild/{ctx.guild.id if guild_id is None else guild_id}.json"
+        ) as f:
             data = json.load(f)
 
         guild_config = json.dumps(data, indent=4)
@@ -48,11 +50,11 @@ class DevCog(commands.Cog):
         os.remove(f"config/guild/{ctx.guild.id if guild_id is None else guild_id}.json")
 
         shutil.copyfile(
-                "config/example_guild_options.json", f"config/guild/{ctx.guild.id if guild_id is None else guild_id}.json"
-            )
+            "config/example_guild_options.json",
+            f"config/guild/{ctx.guild.id if guild_id is None else guild_id}.json",
+        )
 
         await ctx.embed("File deleted and reseted")
-
 
 
 def setup(bot):

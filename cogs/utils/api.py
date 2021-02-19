@@ -11,6 +11,7 @@ VIDEO_FORMATS = [
     # and so on, I don't really know which formats r34 uses
 ]
 
+
 def send_embed(ctx, obj):
     pass
 
@@ -31,11 +32,23 @@ class RedditAPI:
         subreddit = await self.reddit.subreddit(subreddit_name)
 
         if sorting == "hot":
-            submission_list = [submission async for submission in subreddit.hot(limit=20) if not submission.stickied]
+            submission_list = [
+                submission
+                async for submission in subreddit.hot(limit=20)
+                if not submission.stickied
+            ]
         elif sorting == "new":
-            submission_list = [submission async for submission in subreddit.new(limit=20) if not submission.stickied]
+            submission_list = [
+                submission
+                async for submission in subreddit.new(limit=20)
+                if not submission.stickied
+            ]
         else:
-            submission_list = [submission async for submission in subreddit.top(limit=20) if not submission.stickied]
+            submission_list = [
+                submission
+                async for submission in subreddit.top(limit=20)
+                if not submission.stickied
+            ]
 
         submission = submission_list[random.randint(0, len(submission_list) - 1)]
 
@@ -54,20 +67,36 @@ class RedditAPI:
 
         VIDEO_URL = "v.redd.it"
         IMAGE_URL = "i.redd.it"
-        
+
         downvotes = int(
-            ((submission.score / (submission.upvote_ratio * 100)) * 100) - submission.score
+            ((submission.score / (submission.upvote_ratio * 100)) * 100)
+            - submission.score
         )
 
         if VIDEO_URL in submission.url:
             if hasattr(submission, "preview"):
                 preview_image_link = submission.preview["images"][0]["source"]["url"]
-                embed = Embed(ctx, title=submission.title, thumbnail=preview_image_link, url=submission.shortlink)
+                embed = Embed(
+                    ctx,
+                    title=submission.title,
+                    thumbnail=preview_image_link,
+                    url=submission.shortlink,
+                )
             else:
                 preview_image_link = "https://imgur.com/MKnguLq.png"
-            embed = Embed(ctx, title=submission.title, thumbnail=preview_image_link, url=submission.shortlink)
+            embed = Embed(
+                ctx,
+                title=submission.title,
+                thumbnail=preview_image_link,
+                url=submission.shortlink,
+            )
         elif IMAGE_URL in submission.url:
-            embed = Embed(ctx, title=submission.title, image=submission.url, url=submission.shortlink)
+            embed = Embed(
+                ctx,
+                title=submission.title,
+                image=submission.url,
+                url=submission.shortlink,
+            )
         else:
             embed = Embed(ctx, title=submission.title, url=submission.shortlink)
             embed.add_field(
@@ -75,16 +104,23 @@ class RedditAPI:
                 value=submission.selftext
                 if len(submission.selftext) <= 1024
                 else "This post is too long to fit in an Embed. Sending another massge with the text.",
-                inline=False
+                inline=False,
             )
 
         embed.add_fields(
             ("Upvotes:", f"{submission.score}"),
             ("Downvotes:", f"{downvotes}"),
             ("Comments:", f"{submission.num_comments}"),
-            ("Author:",f"[u/{submission.author.name}](https://reddit.com/u/{submission.author.name})"),
-            ("Subreddit:", f"[r/{submission.subreddit}](https://reddid.com/r/{submission.subreddit})"),
-            ("Link:", f"{submission.shortlink}"))
+            (
+                "Author:",
+                f"[u/{submission.author.name}](https://reddit.com/u/{submission.author.name})",
+            ),
+            (
+                "Subreddit:",
+                f"[r/{submission.subreddit}](https://reddid.com/r/{submission.subreddit})",
+            ),
+            ("Link:", f"{submission.shortlink}"),
+        )
 
         return embed
 
@@ -92,8 +128,10 @@ class RedditAPI:
 class Rule34API:
     pass
 
+
 class BooruAPI:
     pass
+
 
 class SauceNaoAPI:
     pass
