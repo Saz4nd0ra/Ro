@@ -50,15 +50,14 @@ class ADB(commands.AutoShardedBot):
         for extension in initial_extensions:
             try:
                 self.load_extension(extension)
+                log.info(f"Loaded {extension}..")
             except Exception as e:
                 print(f"Failed to load extension {extension}.", file=sys.stderr)
                 traceback.print_exc()
 
-    async def on_ready(self):  # maybe I should do it even fancier
-        if not hasattr(self, "uptime"):
-            self.uptime = datetime.datetime.utcnow()
+    async def on_ready(self):
 
-        print(f"Ready: {self.user} (ID: {self.user.id})")
+        log.info(f"Ready: {self.user} (ID: {self.user.id})")
         await self.change_presence(
             activity=discord.Streaming(
                 name=f"{self.config.default_prefix}help",
@@ -81,7 +80,7 @@ class ADB(commands.AutoShardedBot):
             await ctx.error(error)
 
     async def on_shard_resumed(self, shard_id):
-        print(f"Shard ID {shard_id} has resumed..")
+        log.info(f"Shard ID {shard_id} has resumed..")
         self.resumes[shard_id].append(datetime.datetime.utcnow())
 
     async def process_commands(self, message):

@@ -66,7 +66,6 @@ def is_nsfw_channel():
             if ctx.channel.is_nsfw():
                 return True
             else:
-                await ctx.error("This command is an NSFW command.")
                 return False
         else:
             return True

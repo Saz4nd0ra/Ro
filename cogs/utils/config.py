@@ -6,6 +6,8 @@ import codecs
 from configparser import ConfigParser
 
 
+
+
 # TODO maybe add a fallback, in case the user forgets to set a setting
 class Config:
     def __init__(self):
