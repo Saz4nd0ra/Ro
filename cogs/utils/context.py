@@ -2,9 +2,11 @@ from discord.ext import commands
 import discord
 import asyncio
 import discord
+import logging
 import io
 from .embed import Embed
 
+log = logging.getLogger("context")
 
 class Context(commands.Context):
     def __init__(self, **kwargs):
@@ -44,7 +46,7 @@ class Context(commands.Context):
             delete_after=auto_delete if auto_delete else auto_delete is None,
         )
         await self.send(embed=embed)
-        print(f"An error occured:{message}; User: {self.message.author}")
+        log.error(f"An error occured: {message} User: {self.message.author} Guild: {self.message.guild.id}")
 
     async def embed(self, message: str):
         """Sends a quick embed."""
