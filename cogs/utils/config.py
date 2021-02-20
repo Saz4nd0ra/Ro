@@ -39,33 +39,3 @@ class Config:
         self.praw_secret = config["Reddit"]["PrawSecret"]
         self.praw_clientid = config["Reddit"]["PrawClientID"]
 
-
-class GuildConfig:
-    def __init__(self, guild):
-        if not os.path.exists(f"config/guild/{guild.id}.json"):
-            shutil.copyfile(
-                "config/example_guild_options.json", f"config/guild/{guild.id}.json"
-            )
-        with open(f"config/guild/{guild.id}.json") as f:
-            guild_config = json.load(f)
-
-        self.automod_newmemberrole = guild_config["AutoMod"]["NewMemberRole"]
-        self.automod_greeting = guild_config["AutoMod"]["Greeting"]
-
-        self.guild_modrole = guild_config["Roles"]["ModRole"]
-        self.guild_adminrole = guild_config["Roles"]["AdminRole"]
-
-        self.guild_prefix = guild_config["General"]["Prefix"]
-
-
-
-class UserConfig:
-    def __init__(self, ctx):
-        if not os.path.exists(f"config/user/{ctx.author.id}.json"):
-            shutil.copyfile(
-                "config/example_user_options.json", f"config/user/{ctx.author.id}.json"
-            )
-        with open(f"config/user/{ctx.author.id}.json") as f:
-            user_config = json.load(f)
-
-        # TODO all of that
