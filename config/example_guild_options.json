@@ -1,0 +1,17 @@
+{
+    "AutoMod":
+        {
+            "NewMemberRole": "ID",
+            "Greeting": false
+        },
+    "Roles":
+        {
+            "ModRole": "ID",
+            "AdminRole": "ID"
+        },
+    "General": 
+        {
+            "Prefix": ">"
+        }
+    
+}

@@ -2,11 +2,11 @@ import logging
 import discord
 from discord.ext import commands, menus
 from .utils.embed import Embed
+from .utils.config import Config
 from .utils.paginator import ADBPages
-from .utils import time, formats
+from .utils import formats, time
 from collections import Counter
 import asyncio
-import humanize
 import unicodedata
 import inspect
 import os
@@ -18,7 +18,9 @@ class BotHelpPageSource(menus.ListPageSource):
     def __init__(self, help_command, commands):
         # entries = [(cog, len(sub)) for cog, sub in commands.items()]
         # entries.sort(key=lambda t: (t[0].qualified_name, t[1]), reverse=True)
-        super().__init__(entries=sorted(commands.keys(), key=lambda c: c.qualified_name), per_page=6)
+        super().__init__(
+            entries=sorted(commands.keys(), key=lambda c: c.qualified_name), per_page=6
+        )
         self.commands = commands
         self.help_command = help_command
         self.prefix = help_command.clean_prefix
@@ -40,7 +42,7 @@ class BotHelpPageSource(menus.ListPageSource):
         page = []
         for command in commands:
             value = f"`{command.name}`"
-            count = len(value) + 1 # The space
+            count = len(value) + 1  # The space
             if count + current_count < 800:
                 current_count += count
                 page.append(value)
@@ -60,12 +62,13 @@ class BotHelpPageSource(menus.ListPageSource):
         hidden = len(commands) - len(page)
         return short_doc + " ".join(page) + "\n" + (ending_note % hidden)
 
-
     async def format_page(self, menu, cogs):
         prefix = menu.ctx.prefix
-        description = f"Use \"{prefix}help command\" for more info on a command.\n" \
-                      f"Use \"{prefix}help category\" for more info on a category.\n" \
-                       "For more help, [join the help server](https://discord.gg/ycUPFpy)."
+        description = (
+            f'Use "{prefix}help command" for more info on a command.\n'
+            f'Use "{prefix}help category" for more info on a category.\n'
+            "For more help, [join the help server](https://discord.gg/ycUPFpy)."
+        )
 
         embed = Embed(ctx=menu.ctx, title="Categories", description=description)
 
@@ -76,8 +79,10 @@ class BotHelpPageSource(menus.ListPageSource):
                 embed.add_field(name=cog.qualified_name, value=value, inline=True)
 
         maximum = self.get_max_pages()
-        embed.set_footer(text=f"Page {menu.current_page + 1}/{maximum}",
-                         icon_url="https://cdn3.iconfinder.com/data/icons/popular-services-brands/512/github-512.png")
+        embed.set_footer(
+            text=f"Page {menu.current_page + 1}/{maximum}",
+            icon_url="https://cdn3.iconfinder.com/data/icons/popular-services-brands/512/github-512.png",
+        )
         return embed
 
 
@@ -94,14 +99,22 @@ class GroupHelpPageSource(menus.ListPageSource):
 
         for command in commands:
             signature = f"{command.qualified_name} {command.signature}"
-            embed.add_field(name=signature, value=command.short_doc or "No help given...", inline=False)
+            embed.add_field(
+                name=signature,
+                value=command.short_doc or "No help given...",
+                inline=False,
+            )
 
         maximum = self.get_max_pages()
         if maximum > 1:
-            embed.set_author(name=f"Page {menu.current_page + 1}/{maximum} ({len(self.entries)} commands)")
+            embed.set_author(
+                name=f"Page {menu.current_page + 1}/{maximum} ({len(self.entries)} commands)"
+            )
 
-        embed.set_footer(text=f"Use \"{self.prefix}help command\" for more info on a command.",
-                         icon_url="https://cdn3.iconfinder.com/data/icons/popular-services-brands/512/github-512.png")
+        embed.set_footer(
+            text=f'Use "{self.prefix}help command" for more info on a command.',
+            icon_url="https://cdn3.iconfinder.com/data/icons/popular-services-brands/512/github-512.png",
+        )
         return embed
 
 
@@ -113,23 +126,35 @@ class HelpMenu(ADBPages):
     async def show_bot_help(self, payload):
         """shows how to use the bot"""
 
-        embed = Embed(ctx=payload.ctx, title="Using the bot", description="Hello! Welcome to the help page.")
+        embed = Embed(
+            ctx=payload.ctx,
+            title="Using the bot",
+            description="Hello! Welcome to the help page.",
+        )
 
         entries = (
             ("<argument>", "This means the argument is __**required**__."),
             ("[argument]", "This means the argument is __**optional**__."),
             ("[A|B]", "This means that it can be __**either A or B**__."),
-            ("[argument...]", "This means you can have multiple arguments.\n" \
-                              "Now that you know the basics, it should be noted that...\n" \
-                              "__**You do not type in the brackets!**__")
+            (
+                "[argument...]",
+                "This means you can have multiple arguments.\n"
+                "Now that you know the basics, it should be noted that...\n"
+                "__**You do not type in the brackets!**__",
+            ),
         )
 
-        embed.add_field(name="How do I use this bot?", value="Reading the bot signature is pretty simple.")
+        embed.add_field(
+            name="How do I use this bot?",
+            value="Reading the bot signature is pretty simple.",
+        )
 
         for name, value in entries:
             embed.add_field(name=name, value=value, inline=False)
 
-        embed.set_footer(text=f"We were on page {self.current_page + 1} before this message.")
+        embed.set_footer(
+            text=f"We were on page {self.current_page + 1} before this message."
+        )
         await self.message.edit(embed=embed)
 
         async def go_back_to_current_page():
@@ -141,10 +166,12 @@ class HelpMenu(ADBPages):
 
 class PaginatedHelpCommand(commands.HelpCommand):
     def __init__(self):
-        super().__init__(command_attrs={
-            "cooldown": commands.Cooldown(1, 3.0, commands.BucketType.member),
-            "help": "Shows help about the bot, a command, or a category"
-        })
+        super().__init__(
+            command_attrs={
+                "cooldown": commands.Cooldown(1, 3.0, commands.BucketType.member),
+                "help": "Shows help about the bot, a command, or a category",
+            }
+        )
 
     async def on_help_command_error(self, ctx, error):
         if isinstance(error, commands.CommandInvokeError):
@@ -174,7 +201,6 @@ class PaginatedHelpCommand(commands.HelpCommand):
                 all_commands[command.cog].append(command)
             except KeyError:
                 all_commands[command.cog] = [command]
-
 
         menu = HelpMenu(BotHelpPageSource(self, all_commands))
         await menu.start(self.context)
@@ -217,12 +243,13 @@ class General(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.config = Config()
         self.old_help_command = bot.help_command
         bot.help_command = PaginatedHelpCommand()
         bot.help_command.cog = self
 
-    @commands.command()
-    async def user(self, ctx, *, user: discord.Member = None):
+    @commands.command(name="user")
+    async def user_command(self, ctx, *, user: discord.Member = None):
         """Get user information"""
         user = user or ctx.author
 
@@ -249,16 +276,16 @@ class General(commands.Cog):
             ("Username:", f"{user}"),
             ("Nickname:", f"{nick}"),
             ("ID:", f"{user.id}"),
-            ("Created:", f"{humanize.naturaldate(user.created_at)}"),
-            ("Joined:", f"{humanize.naturaldate(user.joined_at)}"),
+            ("Created:", f"{time.convertUTCtoHuman(user.created_at)}"),
+            ("Joined:", f"{time.convertUTCtoHuman(user.joined_at)}"),
             ("Roles:", f"{show_roles}"),
         )
 
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(name="serverinfo")
     @commands.guild_only()
-    async def serverinfo(self, ctx, *, guild_id: int = None):
+    async def serverinfo_command(self, ctx, *, guild_id: int = None):
         """Shows info about the current server."""
 
         if guild_id is not None and await self.bot.is_owner(ctx.author):
@@ -348,11 +375,6 @@ class General(commands.Cog):
             boosts = (
                 f"Level {guild.premium_tier}\n{guild.premium_subscription_count} boosts"
             )
-            last_boost = max(
-                guild.members, key=lambda m: m.premium_since or guild.created_at
-            )
-            if last_boost.premium_since is not None:
-                boosts = f"{boosts}\nLast Boost: {last_boost} ({time.human_timedelta(last_boost.premium_since, accuracy=2)})"
             embed.add_field(name="Boosts", value=boosts, inline=False)
 
         bots = sum(m.bot for m in guild.members)
@@ -388,11 +410,11 @@ class General(commands.Cog):
 
         fmt = f"{fmt}Total Emoji: {len(guild.emojis)}/{guild.emoji_limit*2}"
         embed.add_field(name="Emoji", value=fmt, inline=False)
-        embed.add_field(name="Created:", value=guild.created_at)
+        embed.add_field(name="Created:", value=time.convertUTCtoHuman(guild.created_at))
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def charinfo(self, ctx, *, characters: str):
+    @commands.command(name="charinfo")
+    async def charinfo_command(self, ctx, *, characters: str):
         """Shows you information about a number of characters.
         Only up to 25 characters at a time."""
 
@@ -406,8 +428,8 @@ class General(commands.Cog):
             return await ctx.send("Output too long to display.")
         await ctx.send(msg)
 
-    @commands.command()
-    async def source(self, ctx, *, command: str = None):
+    @commands.command(name="source")
+    async def source_command(self, ctx, *, command: str = None):
         """Displays my full source code or for a specific command."""
         source_url = "https://github.com/Saz4nd0ra/another-discord-bot"
         branch = "dev"
@@ -433,8 +455,8 @@ class General(commands.Cog):
         final_url = f"<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>"
         await ctx.send(final_url)
 
-    @commands.command()
-    async def invite(self, ctx):
+    @commands.command(name="invite")
+    async def invite_command(self, ctx):
         """Joins a server."""
         perms = discord.Permissions.none()
         perms.read_messages = True
@@ -449,9 +471,7 @@ class General(commands.Cog):
         perms.read_message_history = True
         perms.attach_files = True
         perms.add_reactions = True
-        perms.speak = True
-        perms.move_members = True
-        await ctx.send(f"<{discord.utils.oauth_url(self.bot.client_id, perms)}>")
+        await ctx.send(f"<{discord.utils.oauth_url(self.config.client_id, perms)}>")
 
     @commands.command()
     async def bug(self, ctx, *, command: str = None):
@@ -462,7 +482,7 @@ class General(commands.Cog):
         else:
             owner_id = self.bot.config.owner_id
 
-        owner = await self.bot.get_user_info(owner_id)
+        owner = await self.bot.get_user(owner_id)
 
         await self.bot.send_message(
             owner, f"{ctx.message.author} ran into an error. Used command: {command}."
