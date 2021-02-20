@@ -14,9 +14,7 @@ from .utils.context import Context
 from .utils.config import Config
 from .utils import time
 
-SPOTIFY_TRACK_URL_REGEX = r"[\bhttps://open.\b]*spotify[\b.com\b]*[/:]*track[/:]*[A-Za-z0-9?=]+"
-SPOTIFY_PLAYLIST_URL_REGEX = r"[\bhttps://open.\b]*spotify[\b.com\b]*[/:]*playlist[/:]*[A-Za-z0-9?=]+"
-SPOTIFY_ALBUM_URL_REGEX = r"[\bhttps://open.\b]*spotify[\b.com\b]*[/:]*track[/:]*[A-Za-z0-9?=]+"
+SPOTIFY_URL_REGEX = r"[\bhttps://open.\b]*spotify[\b.com\b]*[/:]*[/:]*[A-Za-z0-9?=]+"
 YOUTUBE_URL_REGEX = r"(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/"\
                     r"(?:watch|v|embed)(?:\.php)?(?:\?.*v=|\/))([a-zA-Z0-9\_-]+)"
 
@@ -80,6 +78,9 @@ class QueryError(commands.CommandError):
 class TrackNotFound(commands.CommandError):
     pass
 
+class ProbablyInvalidSpotifyLink(commands.CommandError):
+    pass
+
 
 class RepeatMode(Enum):
     NONE = 0
@@ -100,22 +101,26 @@ class Spotify:
         return track["name"] + track["artists"][0]["name"]
 
     async def get_playlist_tracks(self, url: str):
-        """Gets a single track from Spotify."""
+        """Gets a playlist from Spotify."""
         results = self.sp.playlist_tracks(url)
 
-        tracks = results["items"]
-
-        while results["next"]:
-            results = self.sp.next(results)
-            tracks.extend(results["items"])
-
         tracks_list = list()
-        for track in tracks:
-            if track["track"]:
-                tracks_list.append(track["track"]["name"] + track["track"]["artists"][0]["name"])
+
+        for i in range(0, len(results["items"])):
+            tracks_list.append(results["items"][i]["track"]["name"] + " " +results["items"][i]["track"]["artists"][0]["name"])
 
         return tracks_list
 
+    async def get_album_tracks(self, url: str):
+        """Gets an album from Spotify."""
+        results = self.sp.album_tracks(url)
+
+        tracks_list = list()
+
+        for i in range(0, len(results["items"])):
+            tracks_list.append(results["items"][i]["name"] + " " + results["items"][i]["artists"][0]["name"])
+
+        return tracks_list
 
 
 class Track(wavelink.Track):
@@ -230,9 +235,6 @@ class Player(wavelink.Player):
             await self.destroy()
         except KeyError:
             pass
-
-    async def add_spotify_tracks(self, ctx, tracks):
-        pass
 
     async def add_tracks(self, ctx, tracks):
         if not tracks:
@@ -351,6 +353,28 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         elif isinstance(obj, discord.Guild):
             return self.wavelink.get_player(obj.id, cls=Player)
 
+    async def add_spotify_tracks(self, ctx, spotify_tracks):
+        player = self.get_player(ctx)
+        queue = []
+        await ctx.embed("Processing spotify playlist/album... this could take some time...")
+        playlist_length = len(spotify_tracks)
+        for i in range(0, len(spotify_tracks)):
+            query = f"ytsearch:{spotify_tracks[i]}"
+            track = await self.wavelink.get_tracks(query)
+            try:
+                track = Track(track[0].id, track[0].info, requester=ctx.author)
+                queue.append(track)
+                player.queue.add(track)
+            except:
+                playlist_length - 1
+                continue
+        
+        embed = Embed(ctx, title="Playlist added to queue", description=f"Added {playlist_length} tracks to the queue.", thumbnail=queue[0].thumb)
+        await ctx.send(embed=embed)
+
+        if not player.is_playing and not player.queue.is_empty:
+            await player.start_playback()
+
     @commands.command(name="connect", aliases=["join"])
     async def connect_command(self, ctx, *, channel: discord.VoiceChannel):
         """Connect the player to a channel of your choice."""
@@ -380,30 +404,20 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         if not player.is_connected:
             await player.connect(ctx)
 
-        if re.search(SPOTIFY_TRACK_URL_REGEX, query):
-            track = await self.spotify.get_track(query)
-            query = f"ytsearch:{track}"
-            await player.add_tracks(ctx, await self.wavelink.get_tracks(query))
-        elif re.search(SPOTIFY_PLAYLIST_URL_REGEX, query) or re.search(SPOTIFY_ALBUM_URL_REGEX, query):
-            await ctx.embed("Processing playlist.. this could take a while..")
-            spotify_tracks = await self.spotify.get_tracks(query)
-            first_track = await self.wavelink.get_tracks(f"ytsearch:{spotify_tracks[0]}")
-            first_track = Track(first_track[0].id, first_track[0].info, requester=ctx.author)
-            playlist_length = len(spotify_tracks)
-            player.queue.add(first_track)
-            spotify_tracks.pop(0)
-            for i in range(0, len(spotify_tracks) - 1):
-                query = f"ytsearch:{spotify_tracks[i]}"
-                track = await self.wavelink.get_tracks(query)
-                try:
-                    track = Track(track[0].id, track[0].info, requester=ctx.author)
-                    player.queue.add(track)
-                except:
-                    playlist_length - 1
-                    continue
-                
-            embed = Embed(ctx, title="Playlist added to queue", description=f"Added {playlist_length} tracks to the queue.", thumbnail=first_track.thumb)
-            await ctx.send(embed=embed)
+        if re.search(SPOTIFY_URL_REGEX, query):
+            if "/track/" in query:
+                track = await self.spotify.get_track(query)
+                query = f"ytsearch:{track}"
+                await player.add_tracks(ctx, await self.wavelink.get_tracks(query))
+            elif "/playlist/" in query:
+                spotify_tracks = await self.spotify.get_playlist_tracks(query)
+                await self.add_spotify_tracks(ctx, spotify_tracks)
+            elif "/album/" in query:
+                spotify_tracks = await self.spotify.get_album_tracks(query)
+                await self.add_spotify_tracks(ctx, spotify_tracks)
+            else:
+                raise ProbablyInvalidSpotifyLink
+
         elif not re.search(YOUTUBE_URL_REGEX, query):
             query = query.strip("<>")
             query = f"ytsearch:{query}"
@@ -416,6 +430,8 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
             await ctx.error("There was an error with your query")
         elif isinstance(exc, NoVoiceChannel):
             await ctx.error("No suitable voice channel was provided.")
+        elif isinstance(exc, ProbablyInvalidSpotifyLink):
+            await ctx.error("The spotify link doesn't link to a track, playlist or album apparently.")
 
     @commands.command(name='search')
     async def search(self, ctx, *, query):
