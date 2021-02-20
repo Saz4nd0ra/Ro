@@ -77,7 +77,7 @@ class QueryError(commands.CommandError):
     pass
 
 
-class TrackNotFound(Exception):
+class TrackNotFound(commands.CommandError):
     pass
 
 
@@ -99,10 +99,10 @@ class Spotify:
         track = self.sp.track(url)
         return track["name"] + track["artists"][0]["name"]
 
-    async def get_tracks(self, url: str):
+    async def get_playlist_tracks(self, url: str):
         """Gets a single track from Spotify."""
         results = self.sp.playlist_tracks(url)
-        
+
         tracks = results["items"]
 
         while results["next"]:
@@ -230,6 +230,9 @@ class Player(wavelink.Player):
             await self.destroy()
         except KeyError:
             pass
+
+    async def add_spotify_tracks(self, ctx, tracks):
+        pass
 
     async def add_tracks(self, ctx, tracks):
         if not tracks:
@@ -377,30 +380,35 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         if not player.is_connected:
             await player.connect(ctx)
 
-
         if re.search(SPOTIFY_TRACK_URL_REGEX, query):
             track = await self.spotify.get_track(query)
             query = f"ytsearch:{track}"
-        elif re.search(SPOTIFY_PLAYLIST_URL_REGEX, query):
+            await player.add_tracks(ctx, await self.wavelink.get_tracks(query))
+        elif re.search(SPOTIFY_PLAYLIST_URL_REGEX, query) or re.search(SPOTIFY_ALBUM_URL_REGEX, query):
+            await ctx.embed("Processing playlist.. this could take a while..")
             spotify_tracks = await self.spotify.get_tracks(query)
             first_track = await self.wavelink.get_tracks(f"ytsearch:{spotify_tracks[0]}")
-            first_track = first_track[0]
+            first_track = Track(first_track[0].id, first_track[0].info, requester=ctx.author)
             playlist_length = len(spotify_tracks)
             player.queue.add(first_track)
             spotify_tracks.pop(0)
             for i in range(0, len(spotify_tracks) - 1):
                 query = f"ytsearch:{spotify_tracks[i]}"
-                track = await self.wavelink.get_tracks(f"ytsearch:{query}")
-                track = Track(track[0].id, track[0].info, requester=ctx.author)
-                player.queue.add(track)
+                track = await self.wavelink.get_tracks(query)
+                try:
+                    track = Track(track[0].id, track[0].info, requester=ctx.author)
+                    player.queue.add(track)
+                except:
+                    playlist_length - 1
+                    continue
+                
             embed = Embed(ctx, title="Playlist added to queue", description=f"Added {playlist_length} tracks to the queue.", thumbnail=first_track.thumb)
             await ctx.send(embed=embed)
         elif not re.search(YOUTUBE_URL_REGEX, query):
-            print(4)
             query = query.strip("<>")
             query = f"ytsearch:{query}"
+            await player.add_tracks(ctx, await self.wavelink.get_tracks(query))
             
-        await player.add_tracks(ctx, await self.wavelink.get_tracks(query))
 
     @play_command.error
     async def play_command_error(self, ctx, exc):
