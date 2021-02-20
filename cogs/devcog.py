@@ -56,6 +56,5 @@ class DevCog(commands.Cog):
 
             await ctx.embed("File deleted and reseted")
 
-
 def setup(bot):
     bot.add_cog(DevCog(bot))

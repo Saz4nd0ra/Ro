@@ -3,9 +3,6 @@ import logging
 
 log = logging.getLogger()
 
-# TODO rework checks
-
-
 async def check_guild_permissions(ctx, perms, *, check=all):
 
     resolved = ctx.author.guild_permissions
@@ -26,7 +23,7 @@ async def is_owner(ctx):
 async def is_admin(ctx):
     if await check_guild_permissions(ctx, {"administrator": True}):
         return True
-    elif is_owner() == True:  # bypass for owner
+    elif is_owner(ctx) == True:  # bypass for owner
         return True
     else:
         await ctx.error("This is an admin only command.")
@@ -36,9 +33,9 @@ async def is_admin(ctx):
 async def is_mod(ctx):
     if await check_guild_permissions(ctx, {"manage_guild": True}):
         return True
-    elif is_admin():
+    elif is_admin(ctx):
         return True
-    elif is_owner():  # again, bypass for owner
+    elif is_owner(ctx):  # again, bypass for owner
         return True
     else:
         await ctx.error("This is a mod only command.")

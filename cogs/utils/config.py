@@ -6,6 +6,8 @@ import codecs
 from configparser import ConfigParser
 
 
+
+
 # TODO maybe add a fallback, in case the user forgets to set a setting
 class Config:
     def __init__(self):
@@ -54,6 +56,7 @@ class GuildConfig:
         self.guild_adminrole = guild_config["Roles"]["AdminRole"]
 
         self.guild_prefix = guild_config["General"]["Prefix"]
+
 
 
 class UserConfig:

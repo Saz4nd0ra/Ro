@@ -1,6 +1,1 @@
-{
-    "NSFW":
-        {
-            "BlacklistedTags": ""
-        }
-}
+{"NSFW": {"BlacklistedTags": ""}}
