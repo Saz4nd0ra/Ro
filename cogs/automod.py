@@ -46,6 +46,7 @@ class AutoMod(commands.Cog):
         guild_config = GuildConfig(guild)
 
         embed = discord.Embed(
+            title="**Obligatory Welcome Message**",
             description=f"Your current Server prefix is: {guild_config.guild_prefix}",
             colour=0x7289DA,
         )

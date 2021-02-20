@@ -9,7 +9,7 @@ from .utils.config import Config, GuildConfig
 
 
 class DevCog(commands.Cog):
-    """A developer cog for testing the bot."""
+    """A developer cog for testing."""
 
     def __init__(self, bot):
         self.bot = bot

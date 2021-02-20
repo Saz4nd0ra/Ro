@@ -301,6 +301,7 @@ class Player(wavelink.Player):
 
 
 class Music(commands.Cog, wavelink.WavelinkMixin):
+    """The obligatory Music Cog."""
     def __init__(self, bot):
         self.bot = bot
         self.config = Config()
