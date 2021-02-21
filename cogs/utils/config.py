@@ -6,8 +6,6 @@ import codecs
 from configparser import ConfigParser
 
 
-
-
 # TODO maybe add a fallback, in case the user forgets to set a setting
 class Config:
     def __init__(self):
@@ -19,10 +17,9 @@ class Config:
 
         self.login_token = config["Credentials"]["Token"]
         self.client_id = config["Credentials"]["ClientID"]
+        self.mongodb_url = config["Credentials"]["MongoDBUrl"]
 
-        self.owner_id = config["IDs"][
-            "OwnerID"
-        ]  # TODO fix IDs and if satements with IDs
+        self.owner_id = config["IDs"]["OwnerID"] # TODO fix IDs and if satements with IDs
         self.dev_ids = config["IDs"]["DevIDs"]
 
         self.default_prefix = config["Bot"]["DefaultPrefix"]
