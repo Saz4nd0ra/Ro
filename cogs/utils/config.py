@@ -19,7 +19,9 @@ class Config:
         self.client_id = config["Credentials"]["ClientID"]
         self.mongodb_url = config["Credentials"]["MongoDBUrl"]
 
-        self.owner_id = config["IDs"]["OwnerID"] # TODO fix IDs and if satements with IDs
+        self.owner_id = config["IDs"][
+            "OwnerID"
+        ]  # TODO fix IDs and if satements with IDs
         self.dev_ids = config["IDs"]["DevIDs"]
 
         self.default_prefix = config["Bot"]["DefaultPrefix"]
@@ -34,4 +36,3 @@ class Config:
         self.praw_password = config["Reddit"]["PrawPassword"]
         self.praw_secret = config["Reddit"]["PrawSecret"]
         self.praw_clientid = config["Reddit"]["PrawClientID"]
-

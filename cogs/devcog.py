@@ -15,5 +15,6 @@ class DevCog(commands.Cog):
         self.bot = bot
         self.config = Config()
 
+
 def setup(bot):
     bot.add_cog(DevCog(bot))

@@ -18,7 +18,7 @@ another-discord-bot
 
 log = logging.getLogger(__name__)
 
-config=Config()
+config = Config()
 
 initial_extensions = (
     "cogs.general",
@@ -49,12 +49,29 @@ def call_prefix(bot, msg):
 
 class ADB(commands.AutoShardedBot):
     def __init__(self):
+        allowed_mentions = discord.AllowedMentions(
+            roles=False, everyone=False, users=True
+        )
+        intents = discord.Intents(
+            guilds=True,
+            members=True,
+            bans=True,
+            emojis=True,
+            voice_states=True,
+            messages=True,
+            reactions=True,
+        )
         super().__init__(
             command_prefix=call_prefix,
             description=DESCRIPTION,
-            fetch_offline_members=False,
+            pm_help=None,
+            help_attrs=dict(hidden=True),
+            fetch_offline_members=True,
             heartbeat_timeout=150.0,
+            allowed_mentions=allowed_mentions,
+            intents=intents,
         )
+
         self.config = config
         self.session = aiohttp.ClientSession(loop=self.loop)
 
@@ -77,7 +94,7 @@ class ADB(commands.AutoShardedBot):
         log.info(f"New loging at: {(dt.datetime.utcnow())}")
         await self.change_presence(
             activity=discord.Streaming(
-                name=f"{self.config.default_prefix}help",
+                name=f"use {self.config.default_prefix}help for help!",
                 url="https://www.twitch.tv/commanderroot",
             )
         )

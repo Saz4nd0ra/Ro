@@ -52,7 +52,7 @@ class AutoMod(commands.Cog):
 
         embed = discord.Embed(
             description=f"Your current Server prefix is: {prefix}\n"
-                         "For more help, [click here](https://discord.gg/ycUPFpy) to join the  \"support\" server.",
+            'For more help, [click here](https://discord.gg/ycUPFpy) to join the  "support" server.',
             colour=0x7289DA,
         )
 

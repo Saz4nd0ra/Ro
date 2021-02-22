@@ -2,12 +2,15 @@ import asyncpraw
 from .config import Config
 import random
 import asyncio
+import rule34
+from .db import Connect
 from .embed import Embed
 
 
 VIDEO_FORMATS = [
     "mp4",
     "webm",
+    "mkv"
     # and so on, I don't really know which formats r34 uses
 ]
 
@@ -62,7 +65,7 @@ class RedditAPI:
         redditor = await self.reddit.redditor(name=redditor_name, fetch=True)
         return redditor
 
-    async def build_embed(self, ctx, submission: asyncpraw.models.Submission = None):
+    async def build_embed(self, ctx, submission: asyncpraw.models.Submission):
         """Embed that doesn't include a voting system."""
 
         VIDEO_URL = "v.redd.it"
@@ -126,7 +129,33 @@ class RedditAPI:
 
 
 class Rule34API:
-    pass
+    def __init__(self, bot):
+        self.rule34 = rule34.Rule34(loop=bot.loop)
+
+    async def build_embed(self, ctx, search):
+        pass
+
+    async def get_random_r34(self, search):
+
+        tags = Connect.get_user_field_value(user_id=ctx.author.id, field="nsfw_tags")
+
+        images = await self.rule34.getImages(tags=tags)
+        try:
+            file = images[random.randint(0, len(images))]
+        except TypeError:
+            return
+
+        if any(x in file.file_url for x in VIDEO_FORMATS):
+            is_video = True
+        else:
+            is_video = False
+
+        if file.source:
+            has_source = True
+        else:
+            has_source = False
+
+        return file, is_video, has_source
 
 
 class BooruAPI:

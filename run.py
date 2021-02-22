@@ -33,13 +33,6 @@ class RemoveNoise(logging.Filter):
 
 
 def setup_folders():
-    if not os.path.exists("config/guild/"):
-        os.mkdir("config/guild")
-        print("config/guild folder created....")
-
-    if not os.path.exists("config/user/"):
-        os.mkdir("config/user")
-        print("config/user folder created....")
 
     if not os.path.exists("logs/"):
         os.mkdir("logs/")

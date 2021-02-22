@@ -2,19 +2,27 @@ from pymongo import MongoClient
 from .config import Config
 import dns
 import logging
+
 config = Config()
 mongo_url = config.mongodb_url
 
 client = MongoClient(mongo_url)
 db = client.adb
 
-DEFAULT_GUILD_CONFIG = {"_id": 0, "prefix": ">>", "adminrole": [0], "modrole": [0], "reddit_embed": True}
+DEFAULT_GUILD_CONFIG = {
+    "_id": 0,
+    "prefix": ">>",
+    "adminrole": [0],
+    "modrole": [0],
+    "reddit_embed": True,
+}
 
-DEFAULT_USER_CONFIG = {"_id": 0, "nsfw_blacklist": "-tag1 -tag2"}
+DEFAULT_USER_CONFIG = {"_id": 0, "nsfw_blacklist": "", "redditor_url": "", "twitter_url": ""}
+
+DEFAULT_LEVEL_CONFIG = {"_id": 0, "current_xp": 0, "current_level": 0}
 
 
 class Connect(object):
-
     @staticmethod
     def get_db():
         """Returns our database."""
@@ -40,13 +48,13 @@ class Connect(object):
     def update_user_field(user_id, field, new_setting):
         """Updates a field in the user document."""
 
-        db.users.update_one({"_id": user_id}, {"$set":{field: new_setting}})
+        db.users.update_one({"_id": user_id}, {"$set": {field: new_setting}})
 
     @staticmethod
     def update_guild_field(guild_id, field, new_setting):
         """Updates a field in the user document."""
 
-        db.guilds.update_one({"_id": guild_id}, {"$set":{field: new_setting}})
+        db.guilds.update_one({"_id": guild_id}, {"$set": {field: new_setting}})
 
     @staticmethod
     def get_guild_field_value(guild_id, field):
@@ -63,10 +71,10 @@ class Connect(object):
         document = db.users.find_one({"_id": user_id})
 
         return document[field]
-    
+
     @staticmethod
     def delete_guild_document(guild_id):
-        """Deletes the document for the given guild id.""" 
+        """Deletes the document for the given guild id."""
 
         db.guilds.delete_one({"_id": guild_id})
 
@@ -75,11 +83,3 @@ class Connect(object):
         """Deletes the document for the given user id."""
 
         db.users.delete_one({"_id": user_id})
-
-
-
-
-
-
-
-
