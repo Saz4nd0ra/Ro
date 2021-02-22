@@ -5,6 +5,7 @@ from .utils import checks
 from .utils.embed import Embed
 from .utils.api import RedditAPI
 from .utils.config import Config
+from .utils.db import Connect
 
 REDDIT_DOMAINS = [
     "reddit.com",
@@ -64,7 +65,7 @@ class Reddit(commands.Cog):
     @commands.command()
     async def embedify(self, ctx, *, url: str):
         """Embedify a reddit post. Use in case the automatic embedifier is deactivated."""
-        if self.config.enable_redditembed == True:
+        if Connect.get_guild_field_value(ctx.guild.id, "reddit_embed"):
             await ctx.error(
                 "Reddit embeds are enabled. Just share the link without using the command next time!"
             )
