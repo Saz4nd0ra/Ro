@@ -8,13 +8,13 @@ mongo_url = config.mongodb_url
 client = MongoClient(mongo_url)
 db = client.adb
 
-DEFAULT_GUILD_CONFIG = {"_id": 0, "prefix": ">>", "adminrole": 0, "modrole": 0, "reddit_embed": True}
+DEFAULT_GUILD_CONFIG = {"_id": 0, "prefix": ">>", "adminrole": [0], "modrole": [0], "reddit_embed": True}
 
 DEFAULT_USER_CONFIG = {"_id": 0, "nsfw_blacklist": "-tag1 -tag2"}
 
 
 class Connect(object):
-    
+
     @staticmethod
     def get_db():
         """Returns our database."""
@@ -52,7 +52,7 @@ class Connect(object):
     def get_guild_field_value(guild_id, field):
         """Returns the field value of a given field in the guilds database."""
 
-        document = db.guilds.find_one({'_id': guild_id})
+        document = db.guilds.find_one({"_id": guild_id})
 
         return document[field]
 
@@ -60,10 +60,22 @@ class Connect(object):
     def get_user_field_value(user_id, field: str):
         """Returns the field value of a given field in the users database."""
 
-        document = db.users.find_one({'_id': user_id})
+        document = db.users.find_one({"_id": user_id})
 
         return document[field]
     
+    @staticmethod
+    def delete_guild_document(guild_id):
+        """Deletes the document for the given guild id.""" 
+
+        db.guilds.delete_one({"_id": guild_id})
+
+    @staticmethod
+    def delete_user_document(user_id):
+        """Deletes the document for the given user id."""
+
+        db.users.delete_one({"_id": user_id})
+
 
 
 
