@@ -39,7 +39,11 @@ def call_prefix(bot, msg):
         base.append("!")
     else:
         base.append(config.default_prefix)
-        base.append(Connect.get_guild_field_value(msg.guild.id, "prefix"))
+        try:
+            base.append(Connect.get_guild_field_value(msg.guild.id, "prefix"))
+        except:
+            Connect.generate_guild_document(msg.guild.id)
+            base.append(Connect.get_guild_field_value(msg.guild.id, "prefix"))
     return base
 
 
