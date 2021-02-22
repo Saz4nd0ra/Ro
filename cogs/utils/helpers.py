@@ -25,15 +25,3 @@ def human_join(seq, delim=", ", final="or"):
         return f"{seq[0]} {final} {seq[1]}"
 
     return delim.join(seq[:-1]) + f" {final} {seq[-1]}"
-
-async def load_config(self, guild):
-    with open(f"config/guild/{guild.id}.json", "r") as f:
-        json_data = json.load(f)
-
-    return json_data
-
-async def dump_config(self, guild, new_config):
-    with open(f"config/guild/{guild.id}.json", "w") as f:
-        json.dump(new_config, f)
-
-    return None

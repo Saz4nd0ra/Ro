@@ -2,7 +2,7 @@ from .utils.context import Context
 from discord.ext import commands
 from .utils.embed import Embed
 import discord
-from .utils.config import Config, GuildConfig
+from .utils.config import Config
 from .utils.api import RedditAPI
 
 REDDIT_DOMAINS = [
@@ -43,7 +43,7 @@ class AutoMod(commands.Cog):
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
 
-        guild_config = GuildConfig(guild)
+        
 
         embed = discord.Embed(
             title="**Obligatory Welcome Message**",

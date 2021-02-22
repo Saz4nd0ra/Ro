@@ -1,6 +1,7 @@
 from discord.ext import commands
 import discord
 from cogs.utils import context
+from cogs.utils.db import Connect
 from cogs.utils.config import Config
 from cogs.utils import time
 import datetime as dt
@@ -17,6 +18,7 @@ another-discord-bot
 
 log = logging.getLogger(__name__)
 
+config=Config()
 
 initial_extensions = (
     "cogs.general",
@@ -30,10 +32,21 @@ initial_extensions = (
 )
 
 
+def call_prefix(bot, msg):
+    user_id = bot.user.id
+    base = [f"<@{user_id}>"]
+    if msg.guild is None:
+        base.append("!")
+    else:
+        base.append(config.default_prefix)
+        base.append(Connect.get_guild_field_value(msg.guild.id, "prefix"))
+    return base
+
+
 class ADB(commands.AutoShardedBot):
-    def __init__(self, config=Config()):
+    def __init__(self):
         super().__init__(
-            command_prefix=config.default_prefix,
+            command_prefix=call_prefix,
             description=DESCRIPTION,
             fetch_offline_members=False,
             heartbeat_timeout=150.0,
