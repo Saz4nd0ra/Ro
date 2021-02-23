@@ -61,9 +61,9 @@ class Connect(object):
 
         if new_setting.isnumeric():
             new_setting = int(new_setting)
-        elif new_setting == "True" or "true":
+        elif new_setting == "True":
             new_setting = True
-        elif new_setting == "False" or "false":
+        elif new_setting == "False":
             new_setting = False
 
         if db_name == "guilds":

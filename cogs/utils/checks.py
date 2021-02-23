@@ -23,7 +23,7 @@ async def check_guild_permissions(ctx, perms, *, check=all):
 
 
 async def is_owner(ctx):
-    if ctx.bot.config.owner_id == "auto" and ctx.author.id == ctx.bot.owner_id:
+    if ctx.author.id == ctx.bot.owner_id:
         return True
     elif str(ctx.author.id) == ctx.bot.config.owner_id:
         return True

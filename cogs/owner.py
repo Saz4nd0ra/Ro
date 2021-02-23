@@ -26,7 +26,7 @@ class Owner(commands.Cog):
         """Change the bots settings, like profile picture, user name, nick name and so on."""
         if await checks.is_owner(ctx):
             if ctx.invoked_subcommand == None:
-                await ctx.show_help(ctx.command)
+                await ctx.send_help(ctx.command)
 
     @change_command.command(name="avatar")
     async def change_avatar_command(self, ctx, url: str = None):
