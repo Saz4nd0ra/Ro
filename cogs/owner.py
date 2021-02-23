@@ -17,6 +17,7 @@ class UserError(commands.CommandError):
     pass
 
 class Owner(commands.Cog):
+    """Commands for the bot owner."""
     def __init__(self, bot):
         self.bot = bot
         
