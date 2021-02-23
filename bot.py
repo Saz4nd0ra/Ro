@@ -40,7 +40,7 @@ def call_prefix(bot, msg):
     else:
         base.append(config.default_prefix)
         try:
-            base.append(Connect.get_guild_field_value(msg.guild.id, "prefix"))
+            base.append(Connect.get_field_value(db_name="guilds",document_id=msg.guild.id,field="prefix"))
         except:
             pass
     return base

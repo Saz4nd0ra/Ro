@@ -148,7 +148,7 @@ class Rule34API:
 
     async def get_random_r34(self, ctx, search):
 
-        tags = Connect.get_user_field_value(user_id=ctx.author.id, field="r34_tags")
+        tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
         tags += " " + search
 
         images = await self.rule34.getImages(tags=tags)

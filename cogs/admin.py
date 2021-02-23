@@ -35,8 +35,8 @@ class Admin(commands.Cog):
 
         if await checks.is_admin(ctx):
             try:
-                Connect.update_guild_field(
-                    guild_id=ctx.guild.id, field=field, new_setting=new_setting
+                Connect.update_field_value(
+                    db_name="guilds", document_id=ctx.guild.id, field=field, new_setting=new_setting
                 )
                 await ctx.embed(f"Config updated for {ctx.guild.id}.")
             except Exception:
@@ -55,7 +55,7 @@ class Admin(commands.Cog):
 
         if await checks.is_admin(ctx):
             try:
-                Connect.delete_guild_document(ctx.guild.id)
+                Connect.delete_document(db_name="guilds",document_id=ctx.guild.id)
                 await ctx.embed(f"Deleted config for {ctx.guild.id}")
             except Exception:
                 raise GuildConfigError
@@ -73,7 +73,7 @@ class Admin(commands.Cog):
 
         if await checks.is_admin(ctx):
             try:
-                Connect.generate_guild_document(ctx.guild.id)
+                Connect.generate_document(db_name="guilds", document_id=ctx.guild.id)
                 await ctx.embed(f"Config generated for {ctx.guild.id}.")
             except Exception:
                 raise GuildConfigError
@@ -92,7 +92,7 @@ class Admin(commands.Cog):
         if await checks.is_admin(ctx):
             async for member in ctx.guild.fetch_members():
                 try:
-                    Connect.generate_user_document(user_id=member.id)
+                    Connect.generate_document(db_name="users", document_id=member.id)
                     log.info(f"Config generated for {member.id}|{member.name}.")
                 except:
                     log.warn(

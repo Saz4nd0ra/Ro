@@ -65,7 +65,7 @@ class Reddit(commands.Cog):
     @commands.command()
     async def embedify(self, ctx, *, url: str):
         """Embedify a reddit post. Use in case the automatic embedifier is deactivated."""
-        if Connect.get_guild_field_value(ctx.guild.id, "reddit_embed"):
+        if Connect.get_field_value(db_name="guilds",document_id=ctx.guild.id,field="redditembed"):
             await ctx.error(
                 "Reddit embeds are enabled. Just share the link without using the command next time!"
             )

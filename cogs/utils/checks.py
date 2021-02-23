@@ -1,7 +1,17 @@
 from discord.ext import commands
+from .db import Connect
 import logging
 
 log = logging.getLogger()
+
+
+async def check_role_id(ctx, role_id):
+    roles = ctx.author.roles
+
+    for role in roles:
+        if role.id == role_id:
+            return True
+    return False
 
 
 async def check_guild_permissions(ctx, perms, *, check=all):
@@ -22,9 +32,12 @@ async def is_owner(ctx):
 
 
 async def is_admin(ctx):
+    adminrole_id = Connect.get_field_value(db_name="guilds", document_id=ctx.guild.id, field="adminrole")
     if await check_guild_permissions(ctx, {"administrator": True}):
         return True
-    elif is_owner(ctx) == True:  # bypass for owner
+    elif await check_role_id(ctx, adminrole_id):
+        return True
+    elif await is_owner(ctx) == True:  # bypass for owner
         return True
     else:
         await ctx.error("This is an admin only command.")
@@ -32,11 +45,14 @@ async def is_admin(ctx):
 
 
 async def is_mod(ctx):
+    modrole_id = Connect.get_field_value(db_name="guilds", document_id=ctx.guild.id, field="modrole")
     if await check_guild_permissions(ctx, {"manage_guild": True}):
         return True
-    elif is_admin(ctx):
+    elif await check_role_id(ctx, modrole_id):
         return True
-    elif is_owner(ctx):  # again, bypass for owner
+    elif await is_admin(ctx):
+        return True
+    elif await is_owner(ctx):  # again, bypass for owner
         return True
     else:
         await ctx.error("This is a mod only command.")

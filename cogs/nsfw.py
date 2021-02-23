@@ -19,11 +19,11 @@ class NSFW(commands.Cog):
         """Manage your r34 tags."""
         if ctx.invoked_subcommand == None:
             try:
-                current_tags = Connect.get_user_field_value(user_id=ctx.author.id, field="r34_tags")
+                current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
             except:
-                Connect.generate_user_document(user_id=ctx.author.id)
+                Connect.generate_document(db_name="users",document_id=ctx.author.id)
             finally:
-                current_tags = Connect.get_user_field_value(user_id=ctx.author.id, field="r34_tags")
+                current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
 
             await ctx.author.send(f"Your current tags are: {current_tags}")
     
@@ -32,25 +32,25 @@ class NSFW(commands.Cog):
         """Edit your r34tags by adding or removing tags.
         FYI: blacklisting a tag works by adding a "-" to the tag, for example: -tag1 -tag2."""
         if action == "add":
-            current_tags = Connect.get_user_field_value(user_id=ctx.author.id, field="r34_tags")
+            current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
             new_tags = current_tags + tag + " "
-            Connect.update_user_field(user_id=ctx.author.id, field="r34_tags", new_setting=new_tags.replace("  ", " "))
+            Connect.update_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags", new_setting=new_tags.replace("  ", " "))
         elif action == "remove":
-            current_tags = Connect.get_user_field_value(user_id=ctx.author.id, field="r34_tags")
+            current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
             new_tags = current_tags.replace(tag, "")
-            Connect.update_user_field(user_id=ctx.author.id, field="r34_tags", new_setting=new_tags.replace("  ", " "))
+            Connect.update_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags", new_setting=new_tags.replace("  ", " "))
         else:
             await ctx.error("Wrong action. Action must be add or remove.")
 
-        current_tags = Connect.get_user_field_value(user_id=ctx.author.id, field="r34_tags")
+        current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
 
         await ctx.author.send(f"Your current tags are: {current_tags}")
 
     @r34tags_command.command(name="delete")
     async def r34tags_delete_command(self, ctx):
         """Delete your current r34tags."""
-        Connect.update_user_field(user_id=ctx.author.id, field="r34_tags", new_setting="")
-        current_tags = Connect.get_user_field_value(user_id=ctx.author.id, field="r34_tags")
+        Connect.update_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags", new_setting="")
+        current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
 
         await ctx.author.send(f"Your current tags are: {current_tags}")
 
@@ -61,11 +61,13 @@ class NSFW(commands.Cog):
 
         if await checks.is_nsfw_channel(ctx):
             await ctx.send(embed=await self.rule34.build_embed(ctx, file))
+        else:
+            await ctx.autor.send(embed=await self.rule34.build_embed(ctx, file))
 
     @commands.command()
     async def saucenao(self, ctx, *, url: str):
         """Get the sauce from pictures via an URL. Only available in NSFW channels."""
-        pass
+        
 
 
 def setup(bot):

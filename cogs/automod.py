@@ -2,9 +2,12 @@ from .utils.context import Context
 from discord.ext import commands
 from .utils.embed import Embed
 import discord
+import logging
 from .utils.config import Config
 from .utils.api import RedditAPI
 from .utils.db import Connect
+
+log = logging.getLogger("cogs.automod")
 
 REDDIT_DOMAINS = [
     "reddit.com",
@@ -20,12 +23,16 @@ class AutoMod(commands.Cog):
         self.config = Config()
         self.reddit = RedditAPI()
 
+    def generate_configs(self, guild):
+        """Generates all necessary configs upon joining a guild."""
+        
+
     @commands.Cog.listener()
     async def on_message(self, message):
         """Catch reddit links, check them, and then return them as an embed."""
         ctx = await self.bot.get_context(message, cls=Context)
         if message.guild is not None:
-            if Connect.get_guild_field_value(ctx.guild.id, "reddit_embed"):
+            if Connect.get_field_value(db_name="guilds", document_id=ctx.guild.id, field="redditembed") == True:
                 if any(
                     x in message.content for x in REDDIT_DOMAINS
                 ) and not message.content.startswith(str(ctx.prefix)) and not "/rpan/" in message.content:
@@ -46,10 +53,10 @@ class AutoMod(commands.Cog):
     async def on_guild_join(self, guild):
 
         try:
-            Connect.generate_guild_document(guild.id)
+            Connect.generate_document(db_name="guilds",document_id=guild.id)
         except:
             pass
-        prefix = Connect.get_guild_field_value(guild.id, "prefix")
+        prefix = Connect.get_field_value(db_name="guilds", document_id=guild.id, field="prefix")
 
         embed = discord.Embed(
             description=f"Your current Server prefix is: {prefix}\n"
@@ -76,6 +83,20 @@ class AutoMod(commands.Cog):
                 break
             except:
                 continue
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+
+        try:
+            role_id = Connect.get_field_value(db_name="guilds", document_id=member.guild.id, field="automodrole")
+        except:
+            log.error("Error in guild config, either guild config isn't available or there is an error withing the bot.")
+
+        if role_id == 0:
+            return
+
+        role = member.guild.get_role(role_id)
+        await member.add_roles(role)
 
 
 def setup(bot):
