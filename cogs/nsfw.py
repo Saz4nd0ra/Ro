@@ -32,7 +32,7 @@ class NSFW(commands.Cog):
         """Edit your r34tags by adding or removing tags.
         FYI: blacklisting a tag works by adding a "-" to the tag, for example: -tag1 -tag2."""
         if action == "add":
-            current_tags = Connect.get_user_field_value(user_id=ctx.author.id, field="nsfw_")
+            current_tags = Connect.get_user_field_value(user_id=ctx.author.id, field="r34_tags")
             new_tags = current_tags + tag + " "
             Connect.update_user_field(user_id=ctx.author.id, field="r34_tags", new_setting=new_tags.replace("  ", " "))
         elif action == "remove":
