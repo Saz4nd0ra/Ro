@@ -20,7 +20,7 @@ class Owner(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         
-    @commands.group()
+    @commands.group(name="change")
     async def change_command(self, ctx):
         """Change the bots settings, like profile picture, user name, nick name and so on."""
         if await checks.is_owner(ctx):
