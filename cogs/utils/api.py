@@ -3,6 +3,7 @@ from .config import Config
 import random
 import asyncio
 import rule34
+from saucenao_api import SauceNao
 from .db import Connect
 from .embed import Embed
 
@@ -14,10 +15,8 @@ VIDEO_FORMATS = [
     # and so on, I don't really know which formats r34 uses
 ]
 
-
-def send_embed(ctx, obj):
+class NoResultsFound(Exception):
     pass
-
 
 class RedditAPI:
     def __init__(self):
@@ -111,18 +110,11 @@ class RedditAPI:
             )
 
         embed.add_fields(
-            ("Upvotes:", f"{submission.score}"),
-            ("Downvotes:", f"{downvotes}"),
-            ("Comments:", f"{submission.num_comments}"),
+            ("Post info:", f"<:upvote:754073992771666020> {submission.score} | <:downvote:754073959791722569> {downvotes} | :envelope: {submission.num_comments}"),
             (
                 "Author:",
                 f"[u/{submission.author.name}](https://reddit.com/u/{submission.author.name})",
-            ),
-            (
-                "Subreddit:",
-                f"[r/{submission.subreddit}](https://reddid.com/r/{submission.subreddit})",
-            ),
-            ("Link:", f"{submission.shortlink}"),
+            )
         )
 
         return embed
@@ -132,30 +124,40 @@ class Rule34API:
     def __init__(self, bot):
         self.rule34 = rule34.Rule34(loop=bot.loop)
 
-    async def build_embed(self, ctx, search):
-        pass
+    async def build_embed(self, ctx, file):
+        if any(x in file.file_url for x in VIDEO_FORMATS):
+            embed = Embed(
+                ctx,
+                title="Video found",
+                thumbnail=file.preview_url
+            )
+        else:
+            embed = Embed(
+                ctx,
+                title="Image found.",
+                image=file.file_url
+            )
 
-    async def get_random_r34(self, search):
+        if file.source:
+            embed.add_field(
+                name="Sauce from Rule34:", value=f"[Click Here!]({file.source})"
+            )
+        embed.add_field(name="File link:", value=f"[Click Here!]({file.file_url})")
+        
+        return embed
 
-        tags = Connect.get_user_field_value(user_id=ctx.author.id, field="nsfw_tags")
+    async def get_random_r34(self, ctx, search):
+
+        tags = Connect.get_user_field_value(user_id=ctx.author.id, field="r34_tags")
+        tags += " " + search
 
         images = await self.rule34.getImages(tags=tags)
         try:
             file = images[random.randint(0, len(images))]
-        except TypeError:
-            return
+        except:
+            await ctx.error("There were no results found for your search.")
 
-        if any(x in file.file_url for x in VIDEO_FORMATS):
-            is_video = True
-        else:
-            is_video = False
-
-        if file.source:
-            has_source = True
-        else:
-            has_source = False
-
-        return file, is_video, has_source
+        return file
 
 
 class BooruAPI:

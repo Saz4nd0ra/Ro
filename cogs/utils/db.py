@@ -12,12 +12,12 @@ db = client.adb
 DEFAULT_GUILD_CONFIG = {
     "_id": 0,
     "prefix": ">>",
-    "adminrole": [0],
-    "modrole": [0],
+    "adminrole": 0,
+    "modrole": 0,
     "reddit_embed": True,
 }
 
-DEFAULT_USER_CONFIG = {"_id": 0, "nsfw_blacklist": "", "redditor_url": "", "twitter_url": ""}
+DEFAULT_USER_CONFIG = {"_id": 0, "r34_tags": "", "redditor_url": "", "twitter_url": ""}
 
 DEFAULT_LEVEL_CONFIG = {"_id": 0, "current_xp": 0, "current_level": 0}
 

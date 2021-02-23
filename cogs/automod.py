@@ -24,22 +24,23 @@ class AutoMod(commands.Cog):
     async def on_message(self, message):
         """Catch reddit links, check them, and then return them as an embed."""
         ctx = await self.bot.get_context(message, cls=Context)
-        if Connect.get_guild_field_value(ctx.guild.id, "reddit_embed"):
-            if any(
-                x in message.content for x in REDDIT_DOMAINS
-            ) and not message.content.startswith(str(ctx.prefix)):
-                reddit_url = message.content
-                submission = await self.reddit.get_submission_from_url(reddit_url)
-                if submission.over_18 and not message.channel.is_nsfw():
-                    await message.delete()
-                    await ctx.error(
-                        f"{message.author.mention} this channel doesn't allow NSFW.", 10
-                    )
-                else:
-                    await message.delete()
-                    await ctx.send(embed=await self.reddit.build_embed(ctx, submission))
-                    if len(submission.selftext) > 1024:
-                        ctx.send(submission.selftext)
+        if message.guild is not None:
+            if Connect.get_guild_field_value(ctx.guild.id, "reddit_embed"):
+                if any(
+                    x in message.content for x in REDDIT_DOMAINS
+                ) and not message.content.startswith(str(ctx.prefix)) and not "/rpan/" in message.content:
+                    reddit_url = message.content
+                    submission = await self.reddit.get_submission_from_url(reddit_url)
+                    if submission.over_18 and not message.channel.is_nsfw():
+                        await message.delete()
+                        await ctx.error(
+                            f"{message.author.mention} this channel doesn't allow NSFW.", 10
+                        )
+                    else:
+                        await message.delete()
+                        await ctx.send(embed=await self.reddit.build_embed(ctx, submission))
+                        if len(submission.selftext) > 1024:
+                            ctx.send(submission.selftext)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):

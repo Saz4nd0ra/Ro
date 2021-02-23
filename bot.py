@@ -4,7 +4,7 @@ from cogs.utils import context
 from cogs.utils.db import Connect
 from cogs.utils.config import Config
 from cogs.utils import time
-import datetime as dt
+import datetime
 import json
 import logging
 import aiohttp
@@ -42,8 +42,7 @@ def call_prefix(bot, msg):
         try:
             base.append(Connect.get_guild_field_value(msg.guild.id, "prefix"))
         except:
-            Connect.generate_guild_document(msg.guild.id)
-            base.append(Connect.get_guild_field_value(msg.guild.id, "prefix"))
+            pass
     return base
 
 
@@ -89,9 +88,11 @@ class ADB(commands.AutoShardedBot):
                 traceback.print_exc()
 
     async def on_ready(self):
+        if not hasattr(self, 'uptime'):
+            self.uptime = datetime.datetime.utcnow()
 
         print(f"Ready: {self.user} (ID: {self.user.id})")
-        log.info(f"New loging at: {(dt.datetime.utcnow())}")
+        log.info(f"New loging at: {(datetime.datetime.utcnow())}")
         await self.change_presence(
             activity=discord.Streaming(
                 name=f"use {self.config.default_prefix}help for help!",
@@ -101,9 +102,9 @@ class ADB(commands.AutoShardedBot):
 
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.NoPrivateMessage):
-            await ctx.author.error("This command cannot be used in private messages.")
+            await ctx.author.send("This command cannot be used in private messages.")
         elif isinstance(error, commands.DisabledCommand):
-            await ctx.author.error(
+            await ctx.author.send(
                 "Sorry. This command is disabled and cannot be used."
             )
         elif isinstance(error, commands.CommandInvokeError):
@@ -117,7 +118,7 @@ class ADB(commands.AutoShardedBot):
 
     async def on_shard_resumed(self, shard_id):
         log.info(f"Shard ID {shard_id} has resumed..")
-        self.resumes[shard_id].append(dt.datetime.utcnow())
+        self.resumes[shard_id].append(datetime.datetime.utcnow())
 
     async def process_commands(self, message):
         ctx = await self.get_context(message, cls=context.Context)

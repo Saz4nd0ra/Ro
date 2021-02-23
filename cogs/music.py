@@ -661,7 +661,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         if player.queue.is_empty:
             raise QueueIsEmpty
 
-        player.queue.upcoming.clear
+        player.queue.empty()
 
         await ctx.embed("Queue successfully cleared.")
 
