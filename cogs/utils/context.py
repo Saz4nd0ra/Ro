@@ -17,7 +17,7 @@ class Context(commands.Context):
     def session(self):
         return self.bot.session
 
-    async def show_help(self, command=None):
+    async def send_help(self, command=None):
         """Shows the help command for the specified command if given."""
         cmd = self.bot.get_command("help")
         command = command or self.command.qualified_name

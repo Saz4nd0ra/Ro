@@ -64,10 +64,10 @@ class NSFW(commands.Cog):
         else:
             await ctx.autor.send(embed=await self.rule34.build_embed(ctx, file))
 
-    @commands.command()
-    async def saucenao(self, ctx, *, url: str):
+    @commands.command(name="saucenao")
+    async def saucenao_command(self, ctx, *, url: str):
         """Get the sauce from pictures via an URL. Only available in NSFW channels."""
-        
+        pass
 
 
 def setup(bot):

@@ -29,6 +29,7 @@ initial_extensions = (
     "cogs.automod",
     "cogs.devcog",
     "cogs.admin",
+    "cogs.owner"
 )
 
 

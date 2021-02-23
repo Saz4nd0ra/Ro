@@ -58,8 +58,8 @@ class DevCog(commands.Cog):
             return f"```py\n{e.__class__.__name__}: {e}\n```"
         return f"```py\n{e.text}{'^':>{e.offset}}\n{e.__class__.__name__}: {e}```"
 
-    @commands.command()
-    async def load(self, ctx, *, module):
+    @commands.command(name="load")
+    async def load_command(self, ctx, *, module):
         """Loads a module."""
         if await checks.is_dev(ctx):
             try:
@@ -69,8 +69,8 @@ class DevCog(commands.Cog):
             else:
                 await ctx.embed("\N{OK HAND SIGN}")
 
-    @commands.command()
-    async def unload(self, ctx, *, module):
+    @commands.command(name="unload")
+    async def unload_command(self, ctx, *, module):
         """Unloads a module."""
         if await checks.is_dev(ctx):
             try:
