@@ -85,7 +85,7 @@ class Owner(commands.Cog):
                 raise UserError
 
             try:
-                ctx.guild.me.edit(nick=nickname)
+                await ctx.guild.me.edit(nick=nickname)
                 await ctx.embed("\N{OK HAND SIGN}")
             except discord.Forbidden:
                 raise DiscordAPIError
