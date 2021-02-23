@@ -79,7 +79,9 @@ class ADB(commands.AutoShardedBot):
         self.resumes = defaultdict(list)
         self.identifies = defaultdict(list)
 
-        for extension in initial_extensions:
+        self.initial_extensions = initial_extensions
+
+        for extension in self.initial_extensions:
             try:
                 self.load_extension(extension)
                 log.info(f"Loaded {extension}..")
