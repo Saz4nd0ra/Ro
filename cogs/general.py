@@ -4,9 +4,11 @@ from discord.ext import commands, menus
 from .utils.embed import Embed
 from .utils.config import Config
 from .utils.paginator import ADBPages
-from .utils import helpers, time
+from .utils import helpers
 from collections import Counter
 from .utils.exceptions import *
+import datetime as dt
+import humanize
 import asyncio
 import unicodedata
 import inspect
@@ -249,9 +251,17 @@ class General(commands.Cog):
         bot.help_command = PaginatedHelpCommand()
         bot.help_command.cog = self
 
+    @commands.command(name="avatar")
+    async def avatar_command(self, ctx, *, user: discord.Member = None):
+        """Get a users avatar."""
+        user = user or ctx.author
+        avatar = user.avatar_url_as(static_format='png')
+        embed = Embed(ctx, title=f"Avatar from {user.name}", image=avatar)
+        await ctx.send(embed=embed)
+
     @commands.command(name="user")
     async def user_command(self, ctx, *, user: discord.Member = None):
-        """Get user information"""
+        """Get user information."""
         user = user or ctx.author
 
         show_roles = (
@@ -277,14 +287,14 @@ class General(commands.Cog):
             ("Username:", f"{user}"),
             ("Nickname:", f"{nick}"),
             ("ID:", f"{user.id}"),
-            ("Created:", f"{time.convertUTCtoHuman(user.created_at)}"),
-            ("Joined:", f"{time.convertUTCtoHuman(user.joined_at)}"),
+            ("Created:", f"{humanize.naturaldate(user.created_at)}"),
+            ("Joined:", f"{humanize.naturaldate(user.joined_at)}"),
             ("Roles:", f"{show_roles}"),
         )
 
         await ctx.send(embed=embed)
 
-    @commands.command(name="serverinfo")
+    @commands.command(name="serverinfo", aliases=["server"])
     @commands.guild_only()
     async def serverinfo_command(self, ctx, *, guild_id: int = None):
         """Shows info about the current server."""
@@ -381,8 +391,8 @@ class General(commands.Cog):
         bots = sum(m.bot for m in guild.members)
         fmt = (
             f"🟢 {member_by_status['online']} "
-            f"🟡 {member_by_status['idle']} "
-            f"🔴 {member_by_status['dnd']} "
+            f"🟡 {member_by_status['idle']}"
+            f"🔴 {member_by_status['dnd']}"
             f"⚫	 {member_by_status['offline']}\n"
             f"Total: {guild.member_count} ({helpers.plural(bots):bot})"
         )
@@ -411,7 +421,7 @@ class General(commands.Cog):
 
         fmt = f"{fmt}Total Emoji: {len(guild.emojis)}/{guild.emoji_limit*2}"
         embed.add_field(name="Emoji", value=fmt, inline=False)
-        embed.add_field(name="Created:", value=time.convertUTCtoHuman(guild.created_at))
+        embed.add_field(name="Created:", value=humanize.naturaldate(guild.created_at))
         await ctx.send(embed=embed)
 
     @commands.command(name="charinfo")

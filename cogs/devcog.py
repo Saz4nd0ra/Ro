@@ -14,7 +14,6 @@ import io
 import sys
 import copy
 import logging
-import time
 import subprocess
 from contextlib import redirect_stdout
 from discord.ext import commands

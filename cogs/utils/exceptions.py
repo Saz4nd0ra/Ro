@@ -63,3 +63,6 @@ class NoResultsFound(commands.CommandError):
 class MongoError(commands.CommandError):
     pass
 
+class APIError(commands.CommandError):
+    pass
+

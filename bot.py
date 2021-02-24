@@ -3,7 +3,6 @@ import discord
 from cogs.utils import context
 from cogs.utils.db import Connect
 from cogs.utils.config import Config
-from cogs.utils import time
 import datetime
 import json
 import logging
@@ -91,7 +90,7 @@ class ADB(commands.AutoShardedBot):
                 traceback.print_exc()
 
     async def on_ready(self):
-        if not hasattr(self, 'uptime'):
+        if not hasattr(self, "uptime"):
             self.uptime = datetime.datetime.utcnow()
 
         print(f"Ready: {self.user} (ID: {self.user.id})")

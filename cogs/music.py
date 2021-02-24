@@ -12,7 +12,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from .utils.embed import Embed
 from .utils.context import Context
 from .utils.config import Config
-from .utils import time, exceptions
+from .utils import exceptions
 from .utils.exceptions import *
 
 SPOTIFY_URL_REGEX = r"[\bhttps://open.\b]*spotify[\b.com\b]*[/:]*[/:]*[A-Za-z0-9?=]+"
@@ -557,7 +557,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
             f"[{player.queue.current_track.title}]({player.queue.current_track.uri}) | Requested by: {player.queue.current_track.requester.name}\n\n"
             "**Up next:\n\n**"
             f"{final_string}"
-            f"**{len(player.queue.upcoming)} songs in queue | {time.convertMilliseconds(queue_length_time)} total length**",
+            f"**{len(player.queue.upcoming)} songs in queue",
         )
 
         await ctx.send(embed=embed)
