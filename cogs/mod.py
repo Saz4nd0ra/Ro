@@ -7,6 +7,7 @@ from .utils import checks
 import shlex
 import argparse
 import re
+from .utils.exceptions import *
 
 
 class Arguments(argparse.ArgumentParser):

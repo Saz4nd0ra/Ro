@@ -6,6 +6,7 @@ import rule34
 from saucenao_api import SauceNao
 from .db import Connect
 from .embed import Embed
+from . import exceptions
 
 
 VIDEO_FORMATS = [
@@ -14,9 +15,6 @@ VIDEO_FORMATS = [
     "mkv"
     # and so on, I don't really know which formats r34 uses
 ]
-
-class NoResultsFound(Exception):
-    pass
 
 class RedditAPI:
     def __init__(self):
@@ -146,16 +144,16 @@ class Rule34API:
         
         return embed
 
-    async def get_random_r34(self, ctx, search):
+    async def get_random_r34(self, user_id: int, search: str):
 
-        tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
+        tags = Connect.get_field_value(db_name="users",document_id=user_id,field="r34_tags")
         tags += " " + search
 
         images = await self.rule34.getImages(tags=tags)
         try:
             file = images[random.randint(0, len(images))]
         except:
-            await ctx.error("There were no results found for your search.")
+            raise exceptions.NoResultsFound
 
         return file
 

@@ -6,6 +6,7 @@ from .utils.embed import Embed
 from .utils.api import RedditAPI
 from .utils.config import Config
 from .utils.db import Connect
+from .utils.exceptions import *
 
 REDDIT_DOMAINS = [
     "reddit.com",
@@ -27,7 +28,7 @@ class Reddit(commands.Cog):
         self.config = Config()
 
     @commands.command()
-    async def redditor(self, ctx, *, name: str):
+    async def redditor(self, ctx, *, name: str = None):
         """Display a redditors profile using their name."""
         user = await self.api.get_redditor(redditor_name=name)
 
@@ -65,7 +66,7 @@ class Reddit(commands.Cog):
     @commands.command()
     async def embedify(self, ctx, *, url: str):
         """Embedify a reddit post. Use in case the automatic embedifier is deactivated."""
-        if Connect.get_field_value(db_name="guilds",document_id=ctx.guild.id,field="redditembed"):
+        if Connect.get_field_value(db_name="guilds",document_id=ctx.guild.id,field="reddit_embed"):
             await ctx.error(
                 "Reddit embeds are enabled. Just share the link without using the command next time!"
             )

@@ -2,24 +2,12 @@ import discord
 from discord.ext import commands
 from .utils.embed import Embed
 import logging
-from .utils import checks
+from .utils import checks, exceptions
 from .utils.db import Connect
 from .utils.context import Context
 from .utils.config import Config
 
 log = logging.getLogger("cogs.admin")
-
-
-class TypesNotEqual(commands.CommandError):
-    pass
-
-
-class NoValueGiven(commands.CommandError):
-    pass
-
-
-class GuildConfigError(commands.CommandError):
-    pass
 
 
 class Admin(commands.Cog):
@@ -40,11 +28,11 @@ class Admin(commands.Cog):
                 )
                 await ctx.embed(f"Config updated for {ctx.guild.id}.")
             except Exception:
-                raise GuildConfigError
+                raise exceptions.GuildConfigError
 
     @edit_config_command.error
     async def edit_config_command_error(self, ctx, exc):
-        if isinstance(exc, GuildConfigError):
+        if isinstance(exc, exceptions.GuildConfigError):
             await ctx.error(
                 "Something went wrong with editing the guild config. Does the config exist?"
             )
@@ -58,11 +46,11 @@ class Admin(commands.Cog):
                 Connect.delete_document(db_name="guilds",document_id=ctx.guild.id)
                 await ctx.embed(f"Deleted config for {ctx.guild.id}")
             except Exception:
-                raise GuildConfigError
+                raise exceptions.GuildConfigError
 
     @delete_config_command.error
     async def delete_config_command_error(self, ctx, exc):
-        if isinstance(exc, GuildConfigError):
+        if isinstance(exc, exceptions.GuildConfigError):
             await ctx.error(
                 "Something went wrong during deletion. Does the config even exist?"
             )
@@ -76,11 +64,11 @@ class Admin(commands.Cog):
                 Connect.generate_document(db_name="guilds", document_id=ctx.guild.id)
                 await ctx.embed(f"Config generated for {ctx.guild.id}.")
             except Exception:
-                raise GuildConfigError
+                raise exceptions.GuildConfigError
 
     @gen_config_command.error
     async def gen_config_command_error(self, ctx, exc):
-        if isinstance(exc, GuildConfigError):
+        if isinstance(exc, exceptions.GuildConfigError):
             await ctx.error(
                 "Something went wrong when generating the config. Does the config already exist?"
             )

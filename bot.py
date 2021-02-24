@@ -98,7 +98,7 @@ class ADB(commands.AutoShardedBot):
         log.info(f"New loging at: {(datetime.datetime.utcnow())}")
         await self.change_presence(
             activity=discord.Streaming(
-                name=f"use {self.config.default_prefix}help for help!",
+                name=f"use {self.config.default_prefix}help for help",
                 url="https://www.twitch.tv/commanderroot",
             )
         )
@@ -113,9 +113,9 @@ class ADB(commands.AutoShardedBot):
         elif isinstance(error, commands.CommandInvokeError):
             original = error.original
             if not isinstance(original, discord.HTTPException):
-                print(f"In {ctx.command.qualified_name}:", file=sys.stderr)
+                print(f"In {ctx.command.qualified_name}:")
                 traceback.print_tb(original.__traceback__)
-                print(f"{original.__class__.__name__}: {original}", file=sys.stderr)
+                print(f"{original.__class__.__name__}: {original}")
         elif isinstance(error, commands.ArgumentParsingError):
             await ctx.send(error)
 

@@ -6,6 +6,7 @@ from .utils.config import Config
 from .utils.paginator import ADBPages
 from .utils import helpers, time
 from collections import Counter
+from .utils.exceptions import *
 import asyncio
 import unicodedata
 import inspect
@@ -383,7 +384,7 @@ class General(commands.Cog):
             f"🟡 {member_by_status['idle']} "
             f"🔴 {member_by_status['dnd']} "
             f"⚫	 {member_by_status['offline']}\n"
-            f"Total: {guild.member_count} ({formats.plural(bots):bot})"
+            f"Total: {guild.member_count} ({helpers.plural(bots):bot})"
         )
 
         embed.add_field(name="Members", value=fmt, inline=False)

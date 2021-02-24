@@ -12,7 +12,8 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from .utils.embed import Embed
 from .utils.context import Context
 from .utils.config import Config
-from .utils import time
+from .utils import time, exceptions
+from .utils.exceptions import *
 
 SPOTIFY_URL_REGEX = r"[\bhttps://open.\b]*spotify[\b.com\b]*[/:]*[/:]*[A-Za-z0-9?=]+"
 YOUTUBE_URL_REGEX = (
@@ -27,62 +28,6 @@ OPTIONS = {
     "4⃣": 3,
     "5⃣": 4,
 }
-
-
-class AlreadyConnectedToChannel(commands.CommandError):
-    pass
-
-
-class NoVoiceChannel(commands.CommandError):
-    pass
-
-
-class QueueIsEmpty(commands.CommandError):
-    pass
-
-
-class NoTracksFound(commands.CommandError):
-    pass
-
-
-class PlayerIsAlreadyPaused(commands.CommandError):
-    pass
-
-
-class PlayerIsNotPaused(commands.CommandError):
-    pass
-
-
-class NoMoreTracks(commands.CommandError):
-    pass
-
-
-class NoPreviousTracks(commands.CommandError):
-    pass
-
-
-class InvalidRepeatMode(commands.CommandError):
-    pass
-
-
-class InvalidQueueEntry(commands.CommandError):
-    pass
-
-
-class InvalidQueuePosition(commands.CommandError):
-    pass
-
-
-class QueryError(commands.CommandError):
-    pass
-
-
-class TrackNotFound(commands.CommandError):
-    pass
-
-
-class ProbablyInvalidSpotifyLink(commands.CommandError):
-    pass
 
 
 class RepeatMode(Enum):
@@ -159,7 +104,7 @@ class Queue:
     @property
     def current_track(self):
         if not self._queue:
-            raise QueueIsEmpty
+            raise exceptions.QueueIsEmpty
 
         if self.position <= len(self._queue) - 1:
             return self._queue[self.position]
@@ -167,14 +112,14 @@ class Queue:
     @property
     def upcoming(self):
         if not self._queue:
-            raise QueueIsEmpty
+            raise exceptions.QueueIsEmpty
 
         return self._queue[self.position + 1 :]
 
     @property
     def history(self):
         if not self._queue:
-            raise QueueIsEmpty
+            raise exceptions.QueueIsEmpty
 
         return self._queue[: self.position]
 
@@ -187,7 +132,7 @@ class Queue:
 
     def get_next_track(self):
         if not self._queue:
-            raise QueueIsEmpty
+            raise exceptions.QueueIsEmpty
 
         self.position += 1
 
@@ -203,7 +148,7 @@ class Queue:
 
     def shuffle(self):
         if not self._queue:
-            raise QueueIsEmpty
+            raise exceptions.QueueIsEmpty
 
         upcoming = self.upcoming
         random.shuffle(upcoming)
@@ -234,10 +179,10 @@ class Player(wavelink.Player):
 
     async def connect(self, ctx, channel=None):
         if self.is_connected:
-            raise AlreadyConnectedToChannel
+            raise exceptions.AlreadyConnectedToChannel
 
         if (channel := getattr(ctx.author.voice, "channel", channel)) is None:
-            raise NoVoiceChannel
+            raise exceptions.NoVoiceChannel
 
         await super().connect(channel.id)
         return channel
@@ -250,7 +195,7 @@ class Player(wavelink.Player):
 
     async def add_tracks(self, ctx, tracks):
         if not tracks:
-            raise NoTracksFound
+            raise exceptions.NoTracksFound
 
         if isinstance(tracks, wavelink.TrackPlaylist):
             queue = []
@@ -312,7 +257,7 @@ class Player(wavelink.Player):
         try:
             if (track := self.queue.get_next_track()) is not None:
                 await self.play(track)
-        except QueueIsEmpty:
+        except exceptions.QueueIsEmpty:
             pass
 
     async def repeat_track(self):
@@ -412,9 +357,9 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @connect_command.error
     async def connect_command_error(self, ctx, exc):
-        if isinstance(exc, AlreadyConnectedToChannel):
+        if isinstance(exc, exceptions.AlreadyConnectedToChannel):
             await ctx.error("Already connected to a voice channel.")
-        elif isinstance(exc, NoVoiceChannel):
+        elif isinstance(exc, exceptions.NoVoiceChannel):
             await ctx.error("No suitable voice channel was provided.")
 
     @commands.command(name="disconnect", aliases=["leave"])
@@ -444,7 +389,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
                 spotify_tracks = await self.spotify.get_album_tracks(query)
                 await self.add_spotify_tracks(ctx, spotify_tracks)
             else:
-                raise ProbablyInvalidSpotifyLink
+                raise exceptions.ProbablyInvalidSpotifyLink
 
         elif not re.search(YOUTUBE_URL_REGEX, query):
             query = query.strip("<>")
@@ -453,11 +398,11 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @play_command.error
     async def play_command_error(self, ctx, exc):
-        if isinstance(exc, QueryError):
+        if isinstance(exc, exceptions.QueryError):
             await ctx.error("There was an error with your query")
-        elif isinstance(exc, NoVoiceChannel):
+        elif isinstance(exc, exceptions.NoVoiceChannel):
             await ctx.error("No suitable voice channel was provided.")
-        elif isinstance(exc, ProbablyInvalidSpotifyLink):
+        elif isinstance(exc, exceptions.ProbablyInvalidSpotifyLink):
             await ctx.error(
                 "The spotify link doesn't link to a track, playlist or album apparently."
             )
@@ -478,14 +423,14 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         player = self.get_player(ctx)
 
         if player.is_paused:
-            raise PlayerIsAlreadyPaused
+            raise exceptions.PlayerIsAlreadyPaused
 
         await player.set_pause(True)
         await ctx.embed("Playback paused.")
 
     @pause_command.error
     async def pause_command_error(self, ctx, exc):
-        if isinstance(exc, PlayerIsAlreadyPaused):
+        if isinstance(exc, exceptions.PlayerIsAlreadyPaused):
             await ctx.error("Already paused.")
 
     @commands.command(name="resume")
@@ -494,14 +439,14 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         player = self.get_player(ctx)
 
         if not player.is_paused:
-            raise PlayerIsNotPaused
+            raise exceptions.PlayerIsNotPaused
 
         await player.set_pause(False)
         await ctx.embed("Playback resumed.")
 
     @resume_command.error
     async def resume_command_error(self, ctx, exc):
-        if isinstance(exc, PlayerIsNotPaused):
+        if isinstance(exc, exceptions.PlayerIsNotPaused):
             await ctx.error("Player is not paused.")
 
     @commands.command(name="stop")
@@ -518,17 +463,17 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         player = self.get_player(ctx)
 
         if not player.queue.upcoming:
-            raise NoMoreTracks
+            raise exceptions.NoMoreTracks
 
         await player.stop()
         await ctx.embed("Playing next track in queue.")
 
     @next_command.error
     async def next_command_error(self, ctx, exc):
-        if isinstance(exc, QueueIsEmpty):
+        if isinstance(exc, exceptions.QueueIsEmpty):
             await ctx.error("The queue is non-existent.")
 
-        elif isinstance(exc, NoMoreTracks):
+        elif isinstance(exc, exceptions.NoMoreTracks):
             await ctx.error("There are no more tracks in the queue.")
 
     @commands.command(name="previous")
@@ -537,7 +482,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         player = self.get_player(ctx)
 
         if not player.queue.history:
-            raise NoPreviousTracks
+            raise exceptions.NoPreviousTracks
 
         player.queue.position -= 2
         await player.stop()
@@ -545,9 +490,9 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @previous_command.error
     async def previous_command_error(self, ctx, exc):
-        if isinstance(exc, QueueIsEmpty):
+        if isinstance(exc, exceptions.QueueIsEmpty):
             await ctx.error("The queue is empty.")
-        elif isinstance(exc, NoPreviousTracks):
+        elif isinstance(exc, exceptions.NoPreviousTracks):
             await ctx.error("There are no previous tracks in the queue.")
 
     @commands.command(name="shuffle")
@@ -559,18 +504,23 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @shuffle_command.error
     async def shuffle_command_error(self, ctx, exc):
-        if isinstance(exc, QueueIsEmpty):
+        if isinstance(exc, exceptions.QueueIsEmpty):
             await ctx.error("You can't shuffle an empty queue.")
 
     @commands.command(name="repeat")
     async def repeat_command(self, ctx, mode: str):
         """Repeat the current song once, or loop it forever."""
         if mode not in ("none", "1", "all"):
-            raise InvalidRepeatMode
+            raise exceptions.InvalidRepeatMode
 
         player = self.get_player(ctx)
         player.queue.set_repeat_mode(mode)
         await ctx.embed(f"The repeat mode has been set to {mode}.")
+
+    @repeat_command.error
+    async def repeat_command_error(self, ctx, exc):
+        if isinstance(exc, exceptions.InvalidRepeatMode):
+            await ctx.error("Invalid repeat mode given.")
 
     @commands.command(name="queue", aliases=["q"])
     async def queue_command(self, ctx):
@@ -578,7 +528,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         player = self.get_player(ctx)
 
         if player.queue.is_empty:
-            raise QueueIsEmpty
+            raise exceptions.QueueIsEmpty
 
         final_string = ""
         titles = [track.title for track in player.queue.upcoming[:10]]
@@ -614,7 +564,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @queue_command.error
     async def queue_command_error(self, ctx, exc):
-        if isinstance(exc, QueueIsEmpty):
+        if isinstance(exc, exceptions.QueueIsEmpty):
             await ctx.error("The queue is empty.")
 
     @commands.command(name="move", aliases=["m"])
@@ -627,13 +577,13 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
             return
 
         if player.queue.is_empty:
-            raise QueueIsEmpty
+            raise exceptions.QueueIsEmpty
 
         if not player.queue._queue[entry - 1]:
-            raise InvalidQueueEntry
+            raise exceptions.InvalidQueueEntry
 
         if not player.queue._queue[new_position - 1]:
-            raise InvalidQueuePosition
+            raise exceptions.InvalidQueuePosition
 
         tmp = player.queue._queue[new_position - 1]
 
@@ -645,11 +595,11 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @move_command.error
     async def move_command_error(self, ctx, exc):
-        if isinstance(exc, QueueIsEmpty):
+        if isinstance(exc, exceptions.QueueIsEmpty):
             await ctx.error("The queue is empty.")
-        if isinstance(exc, InvalidQueueEntry):
+        if isinstance(exc, exceptions.InvalidQueueEntry):
             await ctx.error("This entry doesn't exist.")
-        if isinstance(exc, InvalidQueuePosition):
+        if isinstance(exc, exceptions.InvalidQueuePosition):
             await ctx.error("This position is invalid.")
 
     @commands.command(name="clear")
@@ -659,7 +609,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
         player = self.get_player(ctx)
 
         if player.queue.is_empty:
-            raise QueueIsEmpty
+            raise exceptions.QueueIsEmpty
 
         player.queue.empty()
 
@@ -667,7 +617,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
 
     @clear_command.error
     async def clear_command_error(self, ctx, exc):
-        if isinstance(exc, QueueIsEmpty):
+        if isinstance(exc, exceptions.QueueIsEmpty):
             await ctx.error("The queue is empty.")
 
 

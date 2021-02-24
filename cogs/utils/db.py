@@ -1,8 +1,12 @@
 from pymongo import MongoClient
 from .config import Config
+from . import exceptions
 import dns
+import logging
 import distutils
 import logging
+
+log = logging.getLogger("utils.db")
 
 config = Config()
 mongo_url = config.mongodb_url
@@ -15,11 +19,11 @@ DEFAULT_GUILD_CONFIG = {
     "prefix": ">>",
     "adminrole": 0,
     "modrole": 0,
-    "redditembed": True,
-    "automodrole": 0
+    "reddit_embed": True,
+    "automod_role": 0
 }
 
-DEFAULT_USER_CONFIG = {"_id": 0,"r34_tags": "", "redditor_url": "", "twitter_url": ""}
+DEFAULT_USER_CONFIG = {"_id": 0,"r34_tags": "", "reddit_name": "", "twitter_name": "", "steam_name": ""}
 
 DEFAULT_LEVEL_CONFIG = {"_id": 0, "current_xp": 0, "current_level": 0}
 
@@ -44,6 +48,8 @@ class Connect(object):
             DEFAULT_LEVEL_CONFIG["_id"] = document_id
             db.levels.insert_one(DEFAULT_LEVEL_CONFIG)
 
+        log.info(f"Config generated.. _id: {document_id}")
+
     @staticmethod
     def delete_document(db_name: str, document_id: int):
         """Deletes the document for the given guild id."""
@@ -66,25 +72,60 @@ class Connect(object):
         elif new_setting == "False":
             new_setting = False
 
-        if db_name == "guilds":
-            db.guilds.update_one({"_id": document_id}, {"$set": {field: new_setting}})
-        elif db_name == "users":
-            db.users.update_one({"_id": document_id}, {"$set": {field: new_setting}})
-        elif db_name == "levels":
-            db.levels.update_one({"_id": document_id}, {"$set": {field: new_setting}})
+        current_setting = Connect.get_field_value(db_name=db_name, document_id=document_id, field=field)
 
+        if type(current_setting) != type(new_setting): # checking if types equal
+            raise exceptions.TypesNotEqual
+
+        if db_name == "guilds":
+            try:
+                db.guilds.update_one({"_id": document_id}, {"$set": {field: new_setting}})
+            except TypeError:
+                Connect.generate_document(db_name=db_name, document_id=document_id)
+                log.info(f"Config generated.. _id: {document_id}")
+                raise exceptions.MongoError
+            finally:
+                db.guilds.update_one({"_id": document_id}, {"$set": {field: new_setting}})
+        elif db_name == "users":
+            try:
+                db.users.update_one({"_id": document_id}, {"$set": {field: new_setting}})
+            except TypeError:
+                Connect.generate_document(db_name=db_name, document_id=document_id)
+                log.info(f"Config generated.. _id: {document_id}")
+                raise exceptions.MongoError
+            finally:
+                db.users.update_one({"_id": document_id}, {"$set": {field: new_setting}})
+        elif db_name == "levels":
+            try:
+                db.levels.update_one({"_id": document_id}, {"$set": {field: new_setting}})
+            except TypeError:
+                Connect.generate_document(db_name=db_name, document_id=document_id)
+                log.info(f"Config generated.. _id: {document_id}")
+                raise exceptions.MongoError
+            finally:
+                db.levels.update_one({"_id": document_id}, {"$set": {field: new_setting}})
 
     @staticmethod
     def get_field_value(db_name: str, document_id: int, field: str):
         """Returns the field value of a given field in the guilds database."""
 
         if db_name == "guilds":
-            document = db.guilds.find_one({"_id": document_id})
+            if (document := db.guilds.find_one({"_id": document_id})) is not None:
+                return document[field]
+            else:
+                Connect.generate_document(db_name=db_name, document_id=document_id)
+                Connect.get_field_value(db_name=db_name, document_id=document_id, field=field)
         elif db_name == "users":
-            document = db.users.find_one({"_id": document_id})
+            if (document := db.users.find_one({"_id": document_id})) is not None:
+                return document[field]
+            else:
+                Connect.generate_document(db_name=db_name, document_id=document_id)
+                Connect.get_field_value(db_name=db_name, document_id=document_id, field=field)
         elif db_name == "levels":
-            document = db.levels.find_one({"_id": document_id})
-
-        return document[field]
+            if (document := db.levels.find_one({"_id": document_id})) is not None:
+                return document[field]
+            else:
+                Connect.generate_document(db_name=db_name, document_id=document_id)
+                Connect.get_field_value(db_name=db_name, document_id=document_id, field=field)
 
 

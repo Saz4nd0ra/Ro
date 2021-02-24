@@ -4,6 +4,7 @@ from .utils.embed import Embed
 from .utils.config import Config
 from .utils.api import Rule34API
 from .utils.db import Connect
+from .utils.exceptions import *
 
 
 class NSFW(commands.Cog):
