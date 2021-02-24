@@ -4,6 +4,7 @@ from discord.ext import commands, menus
 from .utils.embed import Embed
 from .utils.config import Config
 from .utils.paginator import ADBPages
+from .utils.db import Connect
 from .utils import helpers
 from collections import Counter
 from .utils.exceptions import *
@@ -484,6 +485,32 @@ class General(commands.Cog):
         perms.add_reactions = True
         await ctx.send(f"<{discord.utils.oauth_url(self.config.client_id, perms)}>")
 
+    @commands.group(name="settings")
+    async def settings_command(self, ctx):
+        """Modify your user settings for the bot."""
+
+        if ctx.invoked_subcommand == None:
+            document = Connect.get_document(db_name="users", document_id=ctx.author.id)
+
+            fmt = "```json\n" + str(document) + "\n```"
+
+            await ctx.author.send(fmt)
+            await ctx.embed("\N{OK HAND SIGN}")
+
+    @settings_command.command(name="edit")
+    async def settings_edit_command(self, ctx, field: str, new_setting: str):
+        """Edit your settings. 
+        ----------------------
+        **Usage:**
+
+        `field:` The setting you want to modify, available fields are: `reddit_name, twitter_name, steam_name`.
+        `new_setting:` What you want your setting to be changed to.
+        """
+
+        Connect.update_field_value(db_name="users",document_id=ctx.author.id,field=field, new_setting=new_setting)
+
+        await ctx.embed("\N{OK HAND SIGN}")
+        
 
 def setup(bot):
     bot.add_cog(General(bot))

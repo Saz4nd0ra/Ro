@@ -128,4 +128,28 @@ class Connect(object):
                 Connect.generate_document(db_name=db_name, document_id=document_id)
                 Connect.get_field_value(db_name=db_name, document_id=document_id, field=field)
 
+    @staticmethod
+    def get_document(db_name: str, document_id: int):
+        """Get a whole document with the db_name and id."""
+        if db_name == "guilds":
+            if (document := db.guilds.find_one({"_id": document_id})) is not None:
+                return document
+            else:
+                Connect.generate_document(db_name=db_name, document_id=document_id)
+                Connect.get_document(db_name=db_name, document_id=document_id)
+        elif db_name == "users":
+            if (document := db.users.find_one({"_id": document_id})) is not None:
+                return document
+            else:
+                Connect.generate_document(db_name=db_name, document_id=document_id)
+                Connect.get_document(db_name=db_name, document_id=document_id)
+        elif db_name == "levels":
+            if (document := db.levels.find_one({"_id": document_id})) is not None:
+                return document
+            else:
+                Connect.generate_document(db_name=db_name, document_id=document_id)
+                Connect.get_document(db_name=db_name, document_id=document_id)
+
+
+
 
