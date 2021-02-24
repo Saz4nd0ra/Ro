@@ -29,7 +29,7 @@ class Reddit(commands.Cog):
     @commands.group(name="redditor")
     async def redditor_command(self, ctx, *, name: str = None):
         """Display a redditors profile using their name."""
-        if ctx.invoked_subcommand is None:
+        if ctx.invoked_subcommand == None:
             if name is None:
                 try:
                     name = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="reddit_name")
