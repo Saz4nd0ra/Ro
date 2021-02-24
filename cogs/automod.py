@@ -6,6 +6,7 @@ import logging
 from .utils.config import Config
 from .utils.api import RedditAPI
 from .utils.db import Connect
+from .utils.exceptions import *
 
 log = logging.getLogger("cogs.automod")
 
@@ -32,10 +33,8 @@ class AutoMod(commands.Cog):
         """Catch reddit links, check them, and then return them as an embed."""
         ctx = await self.bot.get_context(message, cls=Context)
         if message.guild is not None:
-            if Connect.get_field_value(db_name="guilds", document_id=ctx.guild.id, field="redditembed") == True:
-                if any(
-                    x in message.content for x in REDDIT_DOMAINS
-                ) and not message.content.startswith(str(ctx.prefix)) and not "/rpan/" in message.content:
+            if any(x in message.content for x in REDDIT_DOMAINS) and not message.content.startswith(str(ctx.prefix)) and not "/rpan/" in message.content:
+                if Connect.get_field_value(db_name="guilds", document_id=ctx.guild.id, field="reddit_embed") == True:
                     reddit_url = message.content
                     submission = await self.reddit.get_submission_from_url(reddit_url)
                     if submission.over_18 and not message.channel.is_nsfw():
@@ -88,7 +87,7 @@ class AutoMod(commands.Cog):
     async def on_member_join(self, member):
 
         try:
-            role_id = Connect.get_field_value(db_name="guilds", document_id=member.guild.id, field="automodrole")
+            role_id = Connect.get_field_value(db_name="guilds", document_id=member.guild.id, field="automod_role")
         except:
             log.error("Error in guild config, either guild config isn't available or there is an error withing the bot.")
 
