@@ -10,3 +10,6 @@ wavelink
 aiohttp
 click
 spotipy
+pymongo
+dnspython
+rule34
