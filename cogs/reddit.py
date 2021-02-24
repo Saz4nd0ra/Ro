@@ -26,44 +26,56 @@ class Reddit(commands.Cog):
         self.api = RedditAPI()
         self.config = Config()
 
-    @commands.command(name="redditor")
+    @commands.group(name="redditor")
     async def redditor_command(self, ctx, *, name: str = None):
         """Display a redditors profile using their name."""
+        if ctx.invoked_subcommand is None:
+            if name is None:
+                try:
+                    name = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="reddit_name")
+                except:
+                    raise exceptions.UserError
 
-        if name is None:
-            try:
-                name = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="reddit_name")
-            except:
-                raise exceptions.UserError
+            user = await self.api.get_redditor(redditor_name=name)
 
-        user = await self.api.get_redditor(redditor_name=name)
+            if getattr(user, "is_suspended", False):
+                embed = Embed(
+                    ctx, title=f"u/{user.name}", description="This user is suspended."
+                )
+            else:
+                embed = Embed(
+                    ctx,
+                    title=f"u/{user.name}",
+                    thumbnail=user.icon_img,
+                    url=f"https://reddit.com/u/{user.name}",
+                )
+                embed.add_fields(
+                    ("Comment Karma:", f"{user.comment_karma}"),
+                    ("Post Karma:", f"{user.link_karma}"),
+                    ("Created at:", f"{user.created_utc}"),
+                    ("Is verified:", "Yes" if user.has_verified_email else "No"),
+                    ("Is moderator:", "Yes" if user.is_mod else "No"),
+                    ("Is gold:", "Yes" if user.is_gold else "No"),
+                )
 
-        if getattr(user, "is_suspended", False):
-            embed = Embed(
-                ctx, title=f"u/{user.name}", description="This user is suspended."
-            )
-        else:
-            embed = Embed(
-                ctx,
-                title=f"u/{user.name}",
-                thumbnail=user.icon_img,
-                url=f"https://reddit.com/u/{user.name}",
-            )
-            embed.add_fields(
-                ("Comment Karma:", f"{user.comment_karma}"),
-                ("Post Karma:", f"{user.link_karma}"),
-                ("Created at:", f"{user.created_utc}"),
-                ("Is verified:", "Yes" if user.has_verified_email else "No"),
-                ("Is moderator:", "Yes" if user.is_mod else "No"),
-                ("Is gold:", "Yes" if user.is_gold else "No"),
-            )
+            await ctx.send(embed=embed)
 
-        await ctx.send(embed=embed)
+    @redditor_command.command(name="set")
+    async def redditor_set_command(self, ctx, name: str):
+        """Set your reddit name!"""
+
+        try:
+            Connect.update_field_value(db_name="users",document_id=ctx.author.id,field="reddit_name",new_setting=name)
+            await ctx.embed("\N{OK HAND SIGN}")
+        except:
+            raise exceptions.MongoError
 
     @redditor_command.error
     async def redditor_command_error(self, ctx, exc):
         if isinstance(exc, exceptions.UserError):
-            await ctx.embed("You did not declare a name, and you didn't set your own name in your config.")
+            await ctx.error("You did not declare a name, and you didn't set your own name in your config.")
+        elif isinstance(exc, exceptions.MongoError):
+            await ctx.error("Something went wrong with the database.")
 
     @commands.command(name="meme")
     async def meme_command(self, ctx):

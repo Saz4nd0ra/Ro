@@ -27,6 +27,7 @@ class NSFW(commands.Cog):
                 current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
 
             await ctx.author.send(f"Your current tags are: {current_tags}")
+            await ctx.embed("\N{OK HAND SIGN}")
     
     @r34tags_command.command(name="edit")
     async def r34tags_edit_command(self, ctx, action: str, *, tag: str):
@@ -46,6 +47,7 @@ class NSFW(commands.Cog):
         current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
 
         await ctx.author.send(f"Your current tags are: {current_tags}")
+        await ctx.embed("\N{OK HAND SIGN}")
 
     @r34tags_command.command(name="delete")
     async def r34tags_delete_command(self, ctx):
@@ -54,6 +56,7 @@ class NSFW(commands.Cog):
         current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
 
         await ctx.author.send(f"Your current tags are: {current_tags}")
+        await ctx.embed("\N{OK HAND SIGN}")
 
     @commands.command(name="rule34", aliases=["r34"])
     async def rule34_command(self, ctx, *, search: str):
