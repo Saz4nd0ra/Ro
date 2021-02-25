@@ -5,7 +5,7 @@ import logging
 log = logging.getLogger()
 
 
-async def check_role_id(ctx, role_id):
+async def check_role_id(ctx: commands.Context, role_id: int):
     roles = ctx.author.roles
 
     for role in roles:
@@ -14,7 +14,7 @@ async def check_role_id(ctx, role_id):
     return False
 
 
-async def check_guild_permissions(ctx, perms, *, check=all):
+async def check_guild_permissions(ctx: commands.Context, perms: dict, *, check=all):
 
     resolved = ctx.author.guild_permissions
     return check(
@@ -33,9 +33,9 @@ async def is_owner(ctx):
 
 async def is_admin(ctx):
     adminrole_id = Connect.get_field_value(db_name="guilds", document_id=ctx.guild.id, field="adminrole")
-    if await check_guild_permissions(ctx, {"administrator": True}):
+    if await check_guild_permissions(ctx, perms={"administrator": True}):
         return True
-    elif await check_role_id(ctx, adminrole_id):
+    elif await check_role_id(ctx, role_id=adminrole_id):
         return True
     elif await is_owner(ctx) == True:  # bypass for owner
         return True
@@ -46,9 +46,9 @@ async def is_admin(ctx):
 
 async def is_mod(ctx):
     modrole_id = Connect.get_field_value(db_name="guilds", document_id=ctx.guild.id, field="modrole")
-    if await check_guild_permissions(ctx, {"manage_guild": True}):
+    if await check_guild_permissions(ctx, perms={"manage_guild": True}):
         return True
-    elif await check_role_id(ctx, modrole_id):
+    elif await check_role_id(ctx, role_id=modrole_id):
         return True
     elif await is_admin(ctx):
         return True

@@ -29,7 +29,7 @@ class Reddit(commands.Cog):
         self.config = Config()
 
     @commands.command(name="redditor")
-    async def redditor_command(self, ctx, *,name: str = None):
+    async def redditor_command(self, ctx: commands.Context, *,name: str = None):
         """Display a redditors profile using their name."""
         if name is None:
             name = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="reddit_name")
@@ -63,14 +63,14 @@ class Reddit(commands.Cog):
         await ctx.send(embed=embed)
 
     @redditor_command.error
-    async def redditor_command_error(self, ctx, exc):
+    async def redditor_command_error(self, ctx: commands.Context, exc):
         if isinstance(exc, exceptions.UserError):
             await ctx.error("You did not declare a name, and you didn't set your own name in your config.")
         elif isinstance(exc, exceptions.APIError):
             await ctx.error("Something went wrong with the API.")
 
     @commands.command(name="meme")
-    async def meme_command(self, ctx):
+    async def meme_command(self, ctx: commands.Context):
         """Get a random meme from r/memes."""
         submission = await self.api.get_submission("memes", "hot")
 
@@ -79,7 +79,7 @@ class Reddit(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="embedify")
-    async def embedify_command(self, ctx, *, url: str):
+    async def embedify_command(self, ctx: commands.Context, *, url: str):
         """Embedify a reddit post. Use in case the automatic embedifier is deactivated."""
         if Connect.get_field_value(db_name="guilds",document_id=ctx.guild.id,field="reddit_embed"):
             await ctx.error(
@@ -94,7 +94,7 @@ class Reddit(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="thighs")
-    async def thighs_command(self, ctx):
+    async def thighs_command(self, ctx: commands.Context):
         """Get some thighs from r/thighdeology."""
 
         submission = await self.api.get_submission(

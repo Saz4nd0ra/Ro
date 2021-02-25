@@ -1,10 +1,11 @@
 import discord
+from discord.ext import commands
 import datetime
 from typing import Tuple
 
 
 class Embed(discord.Embed):
-    def __init__(self, ctx, title, colour=0x7289DA, **kwargs):
+    def __init__(self, ctx: commands.Context, title: str, colour=0x7289DA, **kwargs):
         super(Embed, self).__init__(colour=colour, **kwargs)
 
         self.timestamp = ctx.message.created_at

@@ -30,7 +30,7 @@ async def resolve_member(
 
 
 def can_execute_action(
-    ctx, user, target
+    ctx: commands.Context, user, target
 ):  # checks if the bot is allowed to ban the member
     return (
         user.id == ctx.bot.owner_id
@@ -40,7 +40,7 @@ def can_execute_action(
 
 
 class MemberID(commands.Converter):
-    async def convert(self, ctx, argument):
+    async def convert(self, ctx: commands.Context, argument):
         try:
             m = await commands.MemberConverter().convert(ctx, argument)
         except commands.BadArgument:
@@ -65,7 +65,7 @@ class MemberID(commands.Converter):
 
 
 class ActionReason(commands.Converter):
-    async def convert(self, ctx, argument):
+    async def convert(self, ctx: commands.Context, argument):
         ret = f"{ctx.author} (ID: {ctx.author.id}): {argument}"
 
         if len(ret) > 512:
@@ -84,7 +84,7 @@ def safe_reason_append(base, to_append):
 
 
 class BannedMember(commands.Converter):
-    async def convert(self, ctx, argument):
+    async def convert(self, ctx: commands.Context, argument):
         if argument.isdigit():
             member_id = int(argument, base=10)
             try:
@@ -108,7 +108,7 @@ class Mod(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def do_removal(self, ctx, limit, predicate, *, before=None, after=None):
+    async def do_removal(self, ctx: commands.Context, limit, predicate, *, before=None, after=None):
         if limit > 2000:
             return await ctx.error(f"Too many messages to search given ({limit}/2000)")
 
@@ -145,7 +145,7 @@ class Mod(commands.Cog):
             await ctx.embed(to_send)
 
     @commands.command(name="kick")
-    async def kick_command(self, ctx, member: MemberID, *, reason: ActionReason = None):
+    async def kick_command(self, ctx: commands.Context, member: MemberID, *, reason: ActionReason = None):
         """Kicks a member from the server."""
 
         if reason is None:
@@ -156,7 +156,7 @@ class Mod(commands.Cog):
             await ctx.embed(f"**{member}** was kicked.")
 
     @commands.command(name="ban")
-    async def ban_command(self, ctx, member: MemberID, *, reason: ActionReason = None):
+    async def ban_command(self, ctx: commands.Context, member: MemberID, *, reason: ActionReason = None):
         """Bans a member from the server."""
 
         if reason is None:
@@ -168,7 +168,7 @@ class Mod(commands.Cog):
 
     @commands.command(name="unban")
     async def unban_command(
-        self, ctx, member: BannedMember, *, reason: ActionReason = None
+        self, ctx: commands.Context, member: BannedMember, *, reason: ActionReason = None
     ):
         """Unbans a member from the server."""
 
@@ -186,7 +186,7 @@ class Mod(commands.Cog):
 
     @commands.command(name="softban")
     async def softban_command(
-        self, ctx, member: MemberID, *, reason: ActionReason = None
+        self, ctx: commands.Context, member: MemberID, *, reason: ActionReason = None
     ):
         """Soft bans a member from the server."""
 
@@ -199,7 +199,7 @@ class Mod(commands.Cog):
             await ctx.embed(f"**{member}** was softbanned.")
 
     @commands.command(name="mute")
-    async def mute_command(self, ctx, member: MemberID, time: int = 15):
+    async def mute_command(self, ctx: commands.Context, member: MemberID, time: int = 15):
         """Mute a member in the guild"""
         secs = time * 60
         if await checks.is_mod(ctx):
@@ -218,7 +218,7 @@ class Mod(commands.Cog):
             await ctx.embed(f"**{member}** has been unmuted from the guild.")
 
     @commands.command(name="unmute")
-    async def unmute_command(self, ctx, member: MemberID):
+    async def unmute_command(self, ctx: commands.Context, member: MemberID):
         """Unmute a member in the guild"""
         if await checks.is_mod(ctx):
             for channel in ctx.guild.channels:
@@ -229,7 +229,7 @@ class Mod(commands.Cog):
             await ctx.embed(f"**{member}** has been unmuted from the guild.")
 
     @commands.command(name="warn")
-    async def warn_command(self, ctx, member: MemberID, *, reason: str):
+    async def warn_command(self, ctx: commands.Context, member: MemberID, *, reason: str):
         """Warn a member via DMs"""
         warning = (
             f"You have been warned in **{ctx.guild}** by **{ctx.author}** for {reason}"
@@ -244,14 +244,14 @@ class Mod(commands.Cog):
             await ctx.embed(f"**{member}** has been **warned**")
 
     @warn_command.error
-    async def warn_command_error(self, ctx, exc):
+    async def warn_command_error(self, ctx: commands.Context, exc):
         if isinstance(exc, discord.Forbidden):
             await ctx.error(
                 "The user has disabled DMs for this guild or blocked the bot."
             )
 
     @commands.command(name="removereactions")
-    async def removereactions_command(self, ctx, *, messageid: str):
+    async def removereactions_command(self, ctx: commands.Context, *, messageid: str):
         """Removes all reactions from a message."""
         if await checks.is_mod(ctx):
             message = await ctx.channel.get_message(messageid)
@@ -275,7 +275,7 @@ class Mod(commands.Cog):
         await ctx.embed(msg)
 
     @commands.command(name="addrole")
-    async def addrole_command(self, ctx, member: MemberID, *, rolename: str):
+    async def addrole_command(self, ctx: commands.Context, member: MemberID, *, rolename: str):
         """Adds a specified role to a specified user."""
         role = discord.utils.get(ctx.guild.roles, name=rolename)
         if await checks.is_mod(ctx):
@@ -283,7 +283,7 @@ class Mod(commands.Cog):
             await ctx.embed(f"**{member}** has been given `{role.name}`.")
 
     @commands.command(name="removerole")
-    async def removerole_command(self, ctx, member: MemberID, *, rolename: str):
+    async def removerole_command(self, ctx: commands.Context, member: MemberID, *, rolename: str):
         """Removes a specified role from a specified user."""
         role = discord.utils.get(ctx.guild.roles, name=rolename)
         if await checks.is_mod(ctx):
@@ -291,7 +291,7 @@ class Mod(commands.Cog):
             await ctx.send(f"**{member}** has been given `{role.name}`.")
 
     @commands.command(name="purge")
-    async def purge_command(self, ctx, *, args: str):
+    async def purge_command(self, ctx: commands.Context, *, args: str):
         """An advanced purge command. Available args:
         `--user --contains --starts --ends --search --after --before
         --bot --embeds --files --emoji --reactions --or --not`
@@ -385,7 +385,7 @@ class Mod(commands.Cog):
             )
 
     @purge_command.error
-    async def purge_command_error(self, ctx, exc):
+    async def purge_command_error(self, ctx: commands.Context, exc):
         if isinstance(exc, Exception):
             await ctx.error("An unknown Error occured. Try again.")
 

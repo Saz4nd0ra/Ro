@@ -16,7 +16,7 @@ class NSFW(commands.Cog):
         self.rule34 = Rule34API(bot)
 
     @commands.group(name="r34tags")
-    async def r34tags_command(self, ctx):
+    async def r34tags_command(self, ctx: commands.Context):
         """Manage your r34 tags."""
         if ctx.invoked_subcommand == None:
             try:
@@ -29,7 +29,7 @@ class NSFW(commands.Cog):
             await ctx.author.send(f"Your current tags are: {current_tags}")
     
     @r34tags_command.command(name="add")
-    async def r34tags_add_command(self, ctx, action: str, *, tag: str):
+    async def r34tags_add_command(self, ctx: commands.Context, action: str, *, tag: str):
         """Add a tag to your personal tags.
         FYI: blacklisting a tag works by adding a "-" to the tag, for example: -tag1 -tag2."""
         current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
@@ -42,7 +42,7 @@ class NSFW(commands.Cog):
         await ctx.embed("\N{OK HAND SIGN}")
 
     @r34tags_command.command(name="remove")
-    async def r34tags_remove_command(self, ctx, action: str, *, tag: str):
+    async def r34tags_remove_command(self, ctx: commands.Context, action: str, *, tag: str):
         """Remove a tag from your personal tags.
         FYI: blacklisting a tag works by adding a "-" to the tag, for example: -tag1 -tag2."""
         current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
@@ -55,7 +55,7 @@ class NSFW(commands.Cog):
         await ctx.embed("\N{OK HAND SIGN}")
 
     @r34tags_command.command(name="clear")
-    async def r34tags_clear_command(self, ctx):
+    async def r34tags_clear_command(self, ctx: commands.Context):
         """Clear your current r34tags."""
         Connect.update_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags", new_setting="")
         current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
@@ -64,7 +64,7 @@ class NSFW(commands.Cog):
         await ctx.embed("\N{OK HAND SIGN}")
 
     @commands.command(name="rule34", aliases=["r34"])
-    async def rule34_command(self, ctx, *, search: str):
+    async def rule34_command(self, ctx: commands.Context, *, search: str):
         """Browse rule34.xxx. Only available in NSFW channels."""
         file = await self.rule34.get_random_r34(ctx, search)
 
@@ -74,7 +74,7 @@ class NSFW(commands.Cog):
             await ctx.autor.send(embed=await self.rule34.build_embed(ctx, file))
 
     @commands.command(name="saucenao")
-    async def saucenao_command(self, ctx, *, url: str):
+    async def saucenao_command(self, ctx: commands.Context, *, url: str):
         """Get the sauce from pictures via an URL. Only available in NSFW channels."""
         pass
 

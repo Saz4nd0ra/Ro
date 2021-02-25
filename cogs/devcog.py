@@ -59,7 +59,7 @@ class DevCog(commands.Cog):
         return f"```py\n{e.text}{'^':>{e.offset}}\n{e.__class__.__name__}: {e}```"
 
     @commands.command(name="load")
-    async def load_command(self, ctx, *, module):
+    async def load_command(self, ctx: commands.Context, *, module):
         """Loads a module."""
         if await checks.is_dev(ctx):
             try:
@@ -70,7 +70,7 @@ class DevCog(commands.Cog):
                 await ctx.embed("\N{OK HAND SIGN}")
 
     @commands.command(name="unload")
-    async def unload_command(self, ctx, *, module):
+    async def unload_command(self, ctx: commands.Context, *, module):
         """Unloads a module."""
         if await checks.is_dev(ctx):
             try:
@@ -81,7 +81,7 @@ class DevCog(commands.Cog):
                 await ctx.embed("\N{OK HAND SIGN}")
 
     @commands.group(name="reload", invoke_without_command=True)
-    async def reload_command(self, ctx, *, module):
+    async def reload_command(self, ctx: commands.Context, *, module):
         """Reloads a module."""
         if await checks.is_dev(ctx):
             try:
@@ -150,7 +150,7 @@ class DevCog(commands.Cog):
             await ctx.invoke(reload_all_command)
 
     @commands.command(name="eval")
-    async def eval_command(self, ctx, *, body: str):
+    async def eval_command(self, ctx: commands.Context, *, body: str):
         """Evaluates a code"""
         if await checks.is_dev(ctx):
             env = {

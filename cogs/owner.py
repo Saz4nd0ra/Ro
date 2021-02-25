@@ -23,7 +23,7 @@ class Owner(commands.Cog):
                 await ctx.send_help(ctx.command)
 
     @change_command.command(name="avatar")
-    async def change_avatar_command(self, ctx, url: str = None):
+    async def change_avatar_command(self, ctx: commands.Context, url: str = None):
         """Change the bots profile picture. JPGs and PNGs only!"""
         if await checks.is_owner(ctx):
             if len(ctx.message.attachments) > 0:
@@ -47,12 +47,12 @@ class Owner(commands.Cog):
                     raise exceptions.DiscordAPIError
 
     @change_avatar_command.error
-    async def change_avatar_command_error(self, ctx, exc):
+    async def change_avatar_command_error(self, ctx: commands.Context, exc):
         if isinstance(exc, exceptions.DiscordAPIError):
             await ctx.error("Something went wrong. Try again but be careful to not exceed the limit.")
 
     @change_command.command(name="username")
-    async def change_username_command(self, ctx, *, username: str):
+    async def change_username_command(self, ctx: commands.Context, *, username: str):
         """Change the bots user name."""
 
         if await checks.is_owner(ctx):
@@ -66,12 +66,12 @@ class Owner(commands.Cog):
                 raise exceptions.DiscordAPIError
 
     @change_username_command.error
-    async def change_username_command_error(self, ctx, exc):
+    async def change_username_command_error(self, ctx: commands.Context, exc):
         if isinstance(exc, exceptions.DiscordAPIError):
             await ctx.error("Something went wrong. Try again but be careful to not exceed the limit.")
 
     @change_command.command(name="nickname")
-    async def change_nickname_command(self, ctx, *, nickname):
+    async def change_nickname_command(self, ctx: commands.Context, *, nickname):
         """Change the bots nickname for the current guild."""
 
         if await checks.is_owner(ctx):
@@ -85,7 +85,7 @@ class Owner(commands.Cog):
                 raise exceptions.DiscordAPIError
 
     @change_nickname_command.error
-    async def change_nickname_command_error(self, ctx, exc):
+    async def change_nickname_command_error(self, ctx: commands.Context, exc):
         if isinstance(exc, exceptions.UserError):
             await ctx.error("Something went wrong. Try again but be careful to not exceed the limit.")
         elif isinstance(exc, exceptions.DiscordAPIError):

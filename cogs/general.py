@@ -177,7 +177,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             }
         )
 
-    async def on_help_command_error(self, ctx, error):
+    async def on_help_command_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandInvokeError):
             await ctx.send(str(error.original))
 
@@ -253,7 +253,7 @@ class General(commands.Cog):
         bot.help_command.cog = self
 
     @commands.command(name="avatar")
-    async def avatar_command(self, ctx, *, user: discord.Member = None):
+    async def avatar_command(self, ctx: commands.Context, *, user: discord.Member = None):
         """Get a users avatar."""
         user = user or ctx.author
         avatar = user.avatar_url_as(static_format='png')
@@ -261,7 +261,7 @@ class General(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="user")
-    async def user_command(self, ctx, *, user: discord.Member = None):
+    async def user_command(self, ctx: commands.Context, *, user: discord.Member = None):
         """Get user information."""
         user = user or ctx.author
 
@@ -297,7 +297,7 @@ class General(commands.Cog):
 
     @commands.command(name="serverinfo", aliases=["server"])
     @commands.guild_only()
-    async def serverinfo_command(self, ctx, *, guild_id: int = None):
+    async def serverinfo_command(self, ctx: commands.Context, *, guild_id: int = None):
         """Shows info about the current server."""
 
         if guild_id is not None and await self.bot.is_owner(ctx.author):
@@ -426,7 +426,7 @@ class General(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="charinfo")
-    async def charinfo_command(self, ctx, *, characters: str):
+    async def charinfo_command(self, ctx: commands.Context, *, characters: str):
         """Shows you information about a number of characters.
         Only up to 25 characters at a time."""
 
@@ -441,7 +441,7 @@ class General(commands.Cog):
         await ctx.send(msg)
 
     @commands.command(name="source")
-    async def source_command(self, ctx, *, command: str = None):
+    async def source_command(self, ctx: commands.Context, *, command: str = None):
         """Displays my full source code or for a specific command."""
         source_url = "https://github.com/Saz4nd0ra/another-discord-bot"
         branch = "main"
@@ -468,7 +468,7 @@ class General(commands.Cog):
         await ctx.send(final_url)
 
     @commands.command(name="invite")
-    async def invite_command(self, ctx):
+    async def invite_command(self, ctx: commands.Context):
         """Get an invite link."""
         perms = discord.Permissions.none()
         perms.read_messages = True
@@ -486,7 +486,7 @@ class General(commands.Cog):
         await ctx.send(f"<{discord.utils.oauth_url(self.config.client_id, perms)}>")
 
     @commands.group(name="settings")
-    async def settings_command(self, ctx):
+    async def settings_command(self, ctx: commands.Context):
         """Modify your user settings for the bot."""
 
         if ctx.invoked_subcommand == None:
@@ -498,11 +498,13 @@ class General(commands.Cog):
             await ctx.embed("\N{OK HAND SIGN}")
 
     @settings_command.command(name="edit")
-    async def settings_edit_command(self, ctx, field: str, *,new_setting: str):
+    async def settings_edit_command(self, ctx: commands.Context, field: str, *,new_setting: str):
         """Edit your settings. 
-        **Usage:**
-        `field:` The setting you want to modify, available fields are: `reddit_name, twitter_name, steam_name`.
-        `new_setting:` What you want your setting to be changed to.
+
+        **Args**
+
+            <field> The setting you want to modify, available fields are: reddit_name, twitter_name, steam_name.
+            <new_setting> What you want your setting to be changed to.
         """
 
         Connect.update_field_value(db_name="users",document_id=ctx.author.id,field=field, new_setting=new_setting)

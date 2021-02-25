@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from .config import Config
 from . import exceptions
+from typing import Union
 import dns
 import logging
 import distutils
@@ -62,20 +63,12 @@ class Connect(object):
             db.levels.delete_one({"_id": document_id})
 
     @staticmethod
-    def update_field_value(db_name: str, document_id: int, field: str, new_setting: str):
+    def update_field_value(db_name: str, document_id: int, field: str, new_setting: Union[bool, int, str]):
         """Updates a field in the user document."""
 
-        if new_setting.isnumeric():
-            new_setting = int(new_setting)
-        elif new_setting == "True":
-            new_setting = True
-        elif new_setting == "False":
-            new_setting = False
-
-        current_setting = Connect.get_field_value(db_name=db_name, document_id=document_id, field=field)
-
-        if type(current_setting) != type(new_setting): # checking if types equal
-            raise exceptions.TypesNotEqual
+        if (document := Connect.get_document(db_name=db_name,document_id=document_id)) is not None:
+            if field not in document:
+                raise exceptions.MongoError
 
         if db_name == "guilds":
             try:
@@ -83,7 +76,6 @@ class Connect(object):
             except TypeError:
                 Connect.generate_document(db_name=db_name, document_id=document_id)
                 log.info(f"Config generated.. _id: {document_id}")
-                raise exceptions.MongoError
             finally:
                 db.guilds.update_one({"_id": document_id}, {"$set": {field: new_setting}})
         elif db_name == "users":
@@ -92,7 +84,6 @@ class Connect(object):
             except TypeError:
                 Connect.generate_document(db_name=db_name, document_id=document_id)
                 log.info(f"Config generated.. _id: {document_id}")
-                raise exceptions.MongoError
             finally:
                 db.users.update_one({"_id": document_id}, {"$set": {field: new_setting}})
         elif db_name == "levels":
@@ -101,7 +92,6 @@ class Connect(object):
             except TypeError:
                 Connect.generate_document(db_name=db_name, document_id=document_id)
                 log.info(f"Config generated.. _id: {document_id}")
-                raise exceptions.MongoError
             finally:
                 db.levels.update_one({"_id": document_id}, {"$set": {field: new_setting}})
 

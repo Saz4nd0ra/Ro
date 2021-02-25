@@ -3,6 +3,7 @@ from .config import Config
 import random
 import asyncio
 import rule34
+from discord.ext import commands
 from saucenao_api import SauceNao
 from .db import Connect
 from .embed import Embed
@@ -62,7 +63,7 @@ class RedditAPI:
         redditor = await self.reddit.redditor(name=redditor_name, fetch=True)
         return redditor
 
-    async def build_embed(self, ctx, submission: asyncpraw.models.Submission):
+    async def build_embed(self, ctx: commands.Context, submission: asyncpraw.models.Submission):
         """Embed that doesn't include a voting system."""
 
         VIDEO_URL = "v.redd.it"
@@ -122,7 +123,7 @@ class Rule34API:
     def __init__(self, bot):
         self.rule34 = rule34.Rule34(loop=bot.loop)
 
-    async def build_embed(self, ctx, file):
+    async def build_embed(self, ctx: commands.Context, file: rule34.Rule34Post):
         if any(x in file.file_url for x in VIDEO_FORMATS):
             embed = Embed(
                 ctx,
