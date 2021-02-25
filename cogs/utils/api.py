@@ -123,7 +123,7 @@ class Rule34API:
     def __init__(self, bot):
         self.rule34 = rule34.Rule34(loop=bot.loop)
 
-    async def build_embed(self, ctx: commands.Context, file: rule34.Rule34Post):
+    async def build_embed(self, ctx, file):
         if any(x in file.file_url for x in VIDEO_FORMATS):
             embed = Embed(
                 ctx,
@@ -164,4 +164,23 @@ class BooruAPI:
 
 
 class SauceNaoAPI:
-    pass
+    def __init__(self):
+        self.config = Config()
+        self.saucenao = SauceNao(api_key=self.config.saucenao_api)
+
+    async def build_embed(self, ctx, file, image_url):
+           
+        if (result := self.get_sauce_from_file(file)) is None:
+            return await ctx.error("No sources found.")
+        
+        embed = Embed(ctx, title="Sauce found.", image=image_url)
+        embed.add_fields(("Author:", f"{result.author}"),
+                         ("Similarity:", f"{round(result.similarity)}"),
+                         ("Link:", f"[Click here!]({result.urls[0]})"))
+        return embed
+
+    def get_sauce_from_file(self, file):
+
+        results = self.saucenao.from_file(file)
+
+        return results[0]

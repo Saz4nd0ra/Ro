@@ -1,8 +1,9 @@
 from discord.ext import commands
-from .utils import checks
+import aiohttp
+from .utils import checks, exceptions
 from .utils.embed import Embed
 from .utils.config import Config
-from .utils.api import Rule34API
+from .utils.api import Rule34API, SauceNaoAPI
 from .utils.db import Connect
 from .utils.exceptions import *
 
@@ -13,6 +14,7 @@ class NSFW(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config()
+        self.saucenao = SauceNaoAPI()
         self.rule34 = Rule34API(bot)
 
     @commands.group(name="r34tags")
@@ -66,17 +68,37 @@ class NSFW(commands.Cog):
     @commands.command(name="rule34", aliases=["r34"])
     async def rule34_command(self, ctx: commands.Context, *, search: str):
         """Browse rule34.xxx. Only available in NSFW channels."""
-        file = await self.rule34.get_random_r34(ctx, search)
 
         if await checks.is_nsfw_channel(ctx):
-            await ctx.send(embed=await self.rule34.build_embed(ctx, file))
+            await ctx.send(embed=await self.rule34.build_embed(ctx, await self.rule34.get_random_r34(ctx.author.id, search)))
         else:
-            await ctx.autor.send(embed=await self.rule34.build_embed(ctx, file))
+            await ctx.autor.send(embed=await self.rule34.build_embed(ctx, await self.rule34.get_random_r34(ctx.author.id, search)))
 
     @commands.command(name="saucenao")
-    async def saucenao_command(self, ctx: commands.Context, *, url: str):
+    async def saucenao_command(self, ctx: commands.Context, url: str = None):
         """Get the sauce from pictures via an URL. Only available in NSFW channels."""
-        pass
+        
+        if len(ctx.message.attachments) > 0:
+            attachment_url = ctx.message.attachments[0].url
+            data = await ctx.message.attachments[0].read()
+        elif url is not None:
+            if url.startswith("<") and url.endswith(">"):
+                url = url[1:-1]
+
+            async with aiohttp.ClientSession() as session:
+                try:
+                    async with session.get(url) as r:
+                        data = await r.read()
+                except aiohttp.InvalidURL:
+                    return await ctx.error("That URL is invalid.")
+                except aiohttp.ClientError:
+                    return await ctx.error("Something went wrong while trying to get the image.")
+
+        if await checks.is_nsfw_channel(ctx):
+            await ctx.send(embed=await self.saucenao.build_embed(ctx=ctx, file=data, image_url=url if url else attachment_url))
+            if ctx.message.guild:
+                await ctx.message.delete()
+                
 
 
 def setup(bot):
