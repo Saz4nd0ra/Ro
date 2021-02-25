@@ -469,7 +469,7 @@ class General(commands.Cog):
 
     @commands.command(name="invite")
     async def invite_command(self, ctx):
-        """Joins a server."""
+        """Get an invite link."""
         perms = discord.Permissions.none()
         perms.read_messages = True
         perms.external_emojis = True
@@ -498,11 +498,9 @@ class General(commands.Cog):
             await ctx.embed("\N{OK HAND SIGN}")
 
     @settings_command.command(name="edit")
-    async def settings_edit_command(self, ctx, field: str, new_setting: str):
+    async def settings_edit_command(self, ctx, field: str, *,new_setting: str):
         """Edit your settings. 
-        ----------------------
         **Usage:**
-
         `field:` The setting you want to modify, available fields are: `reddit_name, twitter_name, steam_name`.
         `new_setting:` What you want your setting to be changed to.
         """

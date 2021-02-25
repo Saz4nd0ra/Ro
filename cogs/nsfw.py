@@ -28,29 +28,35 @@ class NSFW(commands.Cog):
 
             await ctx.author.send(f"Your current tags are: {current_tags}")
     
-    @r34tags_command.command(name="edit")
-    async def r34tags_edit_command(self, ctx, action: str, *, tag: str):
-        """Edit your r34tags by adding or removing tags.
+    @r34tags_command.command(name="add")
+    async def r34tags_add_command(self, ctx, action: str, *, tag: str):
+        """Add a tag to your personal tags.
         FYI: blacklisting a tag works by adding a "-" to the tag, for example: -tag1 -tag2."""
-        if action == "add":
-            current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
-            new_tags = current_tags + tag + " "
-            Connect.update_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags", new_setting=new_tags.replace("  ", " "))
-        elif action == "remove":
-            current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
-            new_tags = current_tags.replace(tag, "")
-            Connect.update_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags", new_setting=new_tags.replace("  ", " "))
-        else:
-            await ctx.error("Wrong action. Action must be add or remove.")
+        current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
+        new_tags = current_tags + tag + " "
+        Connect.update_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags", new_setting=new_tags.replace("  ", " "))
 
         current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
 
         await ctx.author.send(f"Your current tags are: {current_tags}")
         await ctx.embed("\N{OK HAND SIGN}")
 
-    @r34tags_command.command(name="delete")
-    async def r34tags_delete_command(self, ctx):
-        """Delete your current r34tags."""
+    @r34tags_command.command(name="remove")
+    async def r34tags_remove_command(self, ctx, action: str, *, tag: str):
+        """Remove a tag from your personal tags.
+        FYI: blacklisting a tag works by adding a "-" to the tag, for example: -tag1 -tag2."""
+        current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
+        new_tags = current_tags.replace(tag, "")
+        Connect.update_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags", new_setting=new_tags.replace("  ", " "))
+
+        current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
+
+        await ctx.author.send(f"Your current tags are: {current_tags}")
+        await ctx.embed("\N{OK HAND SIGN}")
+
+    @r34tags_command.command(name="clear")
+    async def r34tags_clear_command(self, ctx):
+        """Clear your current r34tags."""
         Connect.update_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags", new_setting="")
         current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
 
