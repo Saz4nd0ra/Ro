@@ -122,6 +122,11 @@ class ADB(commands.AutoShardedBot):
         log.info(f"Shard ID {shard_id} has resumed..")
         self.resumes[shard_id].append(datetime.datetime.utcnow())
 
+    async def on_message(self, message):
+        if message.author.bot:
+            return
+        await self.process_commands(message)
+
     async def process_commands(self, message):
         ctx = await self.get_context(message, cls=context.Context)
 
@@ -129,6 +134,7 @@ class ADB(commands.AutoShardedBot):
             return
 
         await self.invoke(ctx)
+
 
     async def close(self):
         await super().close()

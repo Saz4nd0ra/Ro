@@ -40,11 +40,11 @@ class Owner(commands.Cog):
                         return await ctx.error("That URL is invalid.")
                     except aiohttp.ClientError:
                         return await ctx.error("Something went wrong while trying to get the image.")
-                try:
-                    await ctx.bot.user.edit(avatar=data)
-                    await ctx.embed("\N{OK HAND SIGN}")
-                except:
-                    raise exceptions.DiscordAPIError
+            try:
+                await ctx.bot.user.edit(avatar=data)
+                await ctx.embed("\N{OK HAND SIGN}")
+            except:
+                raise exceptions.DiscordAPIError
 
     @change_avatar_command.error
     async def change_avatar_command_error(self, ctx: commands.Context, exc):
