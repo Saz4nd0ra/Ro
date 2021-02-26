@@ -175,7 +175,7 @@ class SauceNaoAPI:
         
         embed = Embed(ctx, title="Sauce found.", image=image_url)
         embed.add_fields(("Author:", f"{result.author}"),
-                         ("Similarity:", f"{round(result.similarity)}"),
+                         ("Similarity:", f"{round(result.similarity)}%"),
                          ("Link:", f"[Click here!]({result.urls[0]})"))
         return embed
 
