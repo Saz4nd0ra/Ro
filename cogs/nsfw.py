@@ -31,7 +31,7 @@ class NSFW(commands.Cog):
             await ctx.author.send(f"Your current tags are: {current_tags}")
     
     @r34tags_command.command(name="add")
-    async def r34tags_add_command(self, ctx: commands.Context, action: str, *, tag: str):
+    async def r34tags_add_command(self, ctx: commands.Context, *, tag: str):
         """Add a tag to your personal tags.
         FYI: blacklisting a tag works by adding a "-" to the tag, for example: -tag1 -tag2."""
         current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
@@ -44,7 +44,7 @@ class NSFW(commands.Cog):
         await ctx.embed("\N{OK HAND SIGN}")
 
     @r34tags_command.command(name="remove")
-    async def r34tags_remove_command(self, ctx: commands.Context, action: str, *, tag: str):
+    async def r34tags_remove_command(self, ctx: commands.Context, *, tag: str):
         """Remove a tag from your personal tags.
         FYI: blacklisting a tag works by adding a "-" to the tag, for example: -tag1 -tag2."""
         current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
