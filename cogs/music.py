@@ -394,6 +394,11 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
             query = query.strip("<>")
             query = f"ytsearch:{query}"
             await player.add_tracks(ctx, await self.wavelink.get_tracks(query))
+        else:
+            query = f"ytsearch:{query}"
+            await player.add_tracks(ctx, await self.wavelink.get_tracks(query))
+
+
 
     @play_command.error
     async def play_command_error(self, ctx: commands.Context, exc):
