@@ -390,8 +390,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
                 await self.add_spotify_tracks(ctx, spotify_tracks)
             else:
                 raise exceptions.ProbablyInvalidSpotifyLink
-
-        elif not re.search(YOUTUBE_URL_REGEX, query):
+        elif re.search(YOUTUBE_URL_REGEX, query):
             query = query.strip("<>")
             query = f"ytsearch:{query}"
             await player.add_tracks(ctx, await self.wavelink.get_tracks(query))
