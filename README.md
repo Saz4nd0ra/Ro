@@ -1,4 +1,4 @@
-# another-discord-bot
+# Ro-discord-bot
 
 A bot made for servers that I like! 
 
