@@ -4,7 +4,7 @@ A bot made for servers that I like!
 
 ### Before we start
 
-You can setup your own instance of ADB, yet you should consider inviting the already hosted instance to your server. 
+You can setup your own instance of Ro, yet you should consider inviting the already hosted instance to your server. 
 If you want to host it yourself, go ahead and read through the instructions.
 
 
