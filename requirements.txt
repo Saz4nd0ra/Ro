@@ -13,3 +13,4 @@ spotipy
 pymongo
 dnspython
 rule34
+saucenao_api
