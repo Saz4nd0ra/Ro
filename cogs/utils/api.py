@@ -26,7 +26,7 @@ class RedditAPI:
             client_secret=self.config.praw_secret,
             password=self.config.praw_password,  # the actual password of the application account
             username=self.config.praw_username,  # the actual username of the application account
-            user_agent="another-discord-bot by /u/Saz4nd0ra",
+            user_agent="Ro-discord-bot by /u/Saz4nd0ra",
         )
 
     async def get_submission(self, subreddit_name: str, sorting: str):

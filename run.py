@@ -7,7 +7,7 @@ import discord
 import importlib
 import contextlib
 
-from bot import ADB, initial_extensions
+from bot import Ro, initial_extensions
 
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
@@ -82,7 +82,7 @@ def run_bot():
         "min_size": 20,
     }
 
-    bot = ADB()
+    bot = Ro()
     bot.run()
 
 

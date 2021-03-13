@@ -13,7 +13,7 @@ class Embed(discord.Embed):
         self.description = kwargs.get("description")
 
         self.set_footer(
-            text="Saz4nd0ra/another-discord-bot",
+            text="Saz4nd0ra/Ro-discord-bot",
             icon_url="https://cdn3.iconfinder.com/data/icons/popular-services-brands/512/github-512.png",
         )
 
@@ -31,7 +31,7 @@ class Embed(discord.Embed):
             self.set_author(
                 name=title,
                 icon_url=ctx.author.avatar_url,
-                url="https://github.com/Saz4nd0ra/another-discord-bot",
+                url="https://github.com/Saz4nd0ra/Ro-discord-bot",
             )
 
     def add_fields(self, *fields: Tuple[str, str]):

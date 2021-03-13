@@ -12,7 +12,7 @@ import sys
 from collections import deque, defaultdict
 
 DESCRIPTION = """
-another-discord-bot
+Ro - a Discord Bot made by Saz4nd0ra
 """
 
 log = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ def call_prefix(bot, msg):
     return base
 
 
-class ADB(commands.AutoShardedBot):
+class Ro(commands.AutoShardedBot):
     def __init__(self):
         allowed_mentions = discord.AllowedMentions(
             roles=False, everyone=False, users=True
@@ -116,7 +116,7 @@ class ADB(commands.AutoShardedBot):
                 traceback.print_tb(original.__traceback__)
                 print(f"{original.__class__.__name__}: {original}")
         elif isinstance(error, commands.ArgumentParsingError):
-            await ctx.send(error)
+            await ctx.error(error)
 
     async def on_shard_resumed(self, shard_id):
         log.info(f"Shard ID {shard_id} has resumed..")

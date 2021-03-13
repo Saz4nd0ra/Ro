@@ -60,7 +60,7 @@ class ProbablyInvalidSpotifyLink(commands.CommandError):
 class NoResultsFound(commands.CommandError):
     pass
 
-class MongoError(commands.CommandError):
+class MongoError(Exception):
     pass
 
 class APIError(commands.CommandError):

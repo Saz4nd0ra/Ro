@@ -443,7 +443,7 @@ class General(commands.Cog):
     @commands.command(name="source")
     async def source_command(self, ctx: commands.Context, *, command: str = None):
         """Displays my full source code or for a specific command."""
-        source_url = "https://github.com/Saz4nd0ra/another-discord-bot"
+        source_url = "https://github.com/Saz4nd0ra/Ro-discord-bot"
         branch = "main"
         if command is None:
             return await ctx.send(source_url)

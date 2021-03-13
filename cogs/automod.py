@@ -68,13 +68,13 @@ class AutoMod(commands.Cog):
             value=f"Use {prefix}help to get an overlook of all available commands.",
         )
         embed.set_footer(
-            text="Saz4nd0ra/another-discord-bot",
+            text="Saz4nd0ra/Ro-discord-bot",
             icon_url="https://cdn3.iconfinder.com/data/icons/popular-services-brands/512/github-512.png",
         )
         embed.set_author(
             name="Obligatory Welcome Message | Thanks for inviting me!",
             icon_url=self.bot.user.avatar_url,
-            url="https://github.com/Saz4nd0ra/another-discord-bot",
+            url="https://github.com/Saz4nd0ra/Ro-discord-bot",
         )
         for i in range(0, len(guild.text_channels)):
             try:
