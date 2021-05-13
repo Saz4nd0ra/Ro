@@ -7,7 +7,6 @@ from .utils import checks
 import shlex
 import argparse
 import re
-from .utils.exceptions import *
 
 
 class Arguments(argparse.ArgumentParser):
@@ -243,13 +242,6 @@ class Mod(commands.Cog):
                 raise discord.Forbidden
             await ctx.embed(f"**{member}** has been **warned**")
 
-    @warn_command.error
-    async def warn_command_error(self, ctx: commands.Context, exc):
-        if isinstance(exc, discord.Forbidden):
-            await ctx.error(
-                "The user has disabled DMs for this guild or blocked the bot."
-            )
-
     @commands.command(name="removereactions")
     async def removereactions_command(self, ctx: commands.Context, *, messageid: str):
         """Removes all reactions from a message."""
@@ -383,12 +375,7 @@ class Mod(commands.Cog):
             await self.do_removal(
                 ctx, args.search, predicate, before=args.before, after=args.after
             )
-
-    @purge_command.error
-    async def purge_command_error(self, ctx: commands.Context, exc):
-        if isinstance(exc, Exception):
-            await ctx.error("An unknown Error occured. Try again.")
-
+            
 
 def setup(bot):
     bot.add_cog(Mod(bot))

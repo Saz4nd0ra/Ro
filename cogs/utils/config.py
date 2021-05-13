@@ -25,12 +25,6 @@ class Config:
 
         self.default_prefix = config["Bot"]["DefaultPrefix"]
 
-        self.ll_host = config["Music"]["LavalinkHost"]
-        self.ll_port = config["Music"]["LavalinkPort"]
-        self.ll_passwd = config["Music"]["LavalinkPassword"]
-        self.spotify_client_id = config["Music"]["SpotifyClientID"]
-        self.spotify_client_secret = config["Music"]["SpotifyClientSecret"]
-
         self.praw_username = config["Reddit"]["PrawUsername"]
         self.praw_password = config["Reddit"]["PrawPassword"]
         self.praw_secret = config["Reddit"]["PrawSecret"]

@@ -5,9 +5,7 @@ import asyncio
 import rule34
 from discord.ext import commands
 from saucenao_api import SauceNao
-from .db import Connect
 from .embed import RoEmbed
-from . import exceptions
 
 
 VIDEO_FORMATS = [
@@ -121,6 +119,7 @@ class RedditAPI:
 
 class Rule34API:
     def __init__(self, bot):
+        self.bot = bot
         self.rule34 = rule34.Rule34(loop=bot.loop)
 
     async def build_embed(self, ctx, file):
@@ -147,14 +146,14 @@ class Rule34API:
 
     async def get_random_r34(self, user_id: int, search: str):
 
-        tags = Connect.get_field_value(db_name="users",document_id=user_id,field="r34_tags")
+        tags = self.bot.mongo_client.db.users.find_one({"_id": user_id})["r34_tags"]
         tags += " " + search
 
         images = await self.rule34.getImages(tags=tags)
         try:
             file = images[random.randint(0, len(images))]
         except:
-            raise exceptions.NoResultsFound
+            return
 
         return file
 

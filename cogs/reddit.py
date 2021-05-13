@@ -3,11 +3,10 @@ import discord
 import humanize
 import datetime
 from discord.ext import commands
-from .utils import checks, exceptions
+from .utils import checks 
 from .utils.embed import RoEmbed
 from .utils.api import RedditAPI
 from .utils.config import Config
-from .utils.db import Connect
 
 REDDIT_DOMAINS = [
     "reddit.com",
@@ -32,11 +31,11 @@ class Reddit(commands.Cog):
     async def redditor_command(self, ctx: commands.Context, *,name: str = None):
         """Display a redditors profile using their name."""
         if name is None:
-            name = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="reddit_name")
+            name = self.bot.mongo_client.db.users.find_one({"_id": ctx.author.id})["reddit_name"]
         try:
             user = await self.api.get_redditor(redditor_name=name)
         except ValueError:
-            raise exceptions.UserError
+            await ctx.error("Redditor not found.")
 
         date = humanize.naturaldate(datetime.datetime.fromtimestamp(user.created_utc))  
 
@@ -62,13 +61,6 @@ class Reddit(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @redditor_command.error
-    async def redditor_command_error(self, ctx: commands.Context, exc):
-        if isinstance(exc, exceptions.UserError):
-            await ctx.error("You did not declare a name, and you didn't set your own name in your config.")
-        elif isinstance(exc, exceptions.APIError):
-            await ctx.error("Something went wrong with the API.")
-
     @commands.command(name="meme")
     async def meme_command(self, ctx: commands.Context):
         """Get a random meme from r/memes."""
@@ -81,7 +73,7 @@ class Reddit(commands.Cog):
     @commands.command(name="embedify")
     async def embedify_command(self, ctx: commands.Context, *, url: str):
         """Embedify a reddit post. Use in case the automatic embedifier is deactivated."""
-        if Connect.get_field_value(db_name="guilds",document_id=ctx.guild.id,field="reddit_embed"):
+        if self.bot.mongo_client.db.guilds.find_one({"_id": ctx.guild.id})["auto_embed"]:
             await ctx.error(
                 "Reddit embeds are enabled. Just share the link without using the command next time!"
             )

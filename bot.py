@@ -3,9 +3,9 @@ from typing import final
 from discord.ext import commands
 import discord
 from pymongo import mongo_client
-from .cogs.utils.context import Context
-from .cogs.utils.config import Config
-from .cogs.utils.db import RoDBClient
+from cogs.utils import context
+from cogs.utils.config import Config
+from cogs.utils.db import RoDBClient
 import datetime
 import json
 import os
@@ -27,7 +27,7 @@ else:
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 DESCRIPTION = """
-Ro - a Discord Bot made by Saz4nd0ra
+Ro - rewritten and better than ever!
 """
 
 log = logging.getLogger(__name__)
@@ -39,7 +39,6 @@ mongo_client = RoDBClient(config.mongodb_url)
 initial_extensions = (
     "cogs.general",
     "cogs.mod",
-    "cogs.music",
     "cogs.nsfw",
     "cogs.reddit",
     "cogs.automod",
@@ -65,7 +64,7 @@ def call_prefix(bot, msg):
     return base
 
 
-class Ro(commands.AutoShardedBot):
+class Ro(commands.Bot):
     def __init__(self):
         allowed_mentions = discord.AllowedMentions(
             roles=False, everyone=False, users=True
@@ -85,7 +84,6 @@ class Ro(commands.AutoShardedBot):
             pm_help=None,
             help_attrs=dict(hidden=True),
             fetch_offline_members=True,
-            heartbeat_timeout=150.0,
             allowed_mentions=allowed_mentions,
             intents=intents,
         )
@@ -93,11 +91,6 @@ class Ro(commands.AutoShardedBot):
         self.config = config
         self.session = aiohttp.ClientSession(loop=self.loop)
         self.mongo_client = RoDBClient(config.mongodb_url)
-
-        self._prev_events = deque(maxlen=10)
-
-        self.resumes = defaultdict(list)
-        self.identifies = defaultdict(list)
 
         self.initial_extensions = initial_extensions
 
@@ -137,10 +130,6 @@ class Ro(commands.AutoShardedBot):
                 print(f"{original.__class__.__name__}: {original}")
         elif isinstance(error, commands.ArgumentParsingError):
             await ctx.error(error)
-
-    async def on_shard_resumed(self, shard_id):
-        log.info(f"Shard ID {shard_id} has resumed..")
-        self.resumes[shard_id].append(datetime.datetime.utcnow())
 
     async def on_message(self, message):
         if message.author.bot:

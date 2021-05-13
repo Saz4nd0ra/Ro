@@ -26,3 +26,17 @@ def human_join(seq, delim=", ", final="or"):
         return f"{seq[0]} {final} {seq[1]}"
 
     return delim.join(seq[:-1]) + f" {final} {seq[-1]}"
+
+
+def change_variable_type(variable: str):
+    if variable.isnumeric():
+        if "." in variable:
+            variable = float(variable)
+        else:
+            variable = int(variable)
+    elif variable == "True":
+        variable = True
+    elif variable == "False":
+        variable = False
+    
+    return variable

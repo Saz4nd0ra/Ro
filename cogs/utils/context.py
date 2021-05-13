@@ -4,7 +4,7 @@ import asyncio
 import discord
 import logging
 import io
-from .embed import RoEmbed
+from .embed import ErrorEmbed, RoEmbed
 
 log = logging.getLogger("utils.context")
 
@@ -45,3 +45,12 @@ class Context(commands.Context):
                 description=message,
             )
             await self.send(embed=embed)
+
+    async def error(self, err_message: str):
+                """Sends a quick embed."""
+                embed = ErrorEmbed(
+                    ctx=self,
+                    title="An Error occured.",
+                    description=err_message,
+                )
+                await self.send(embed=embed)

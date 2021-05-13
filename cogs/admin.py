@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import logging
 from typing import Union
-from .utils import checks, exceptions
+from .utils import checks, helpers
 from .utils.context import Context
 from .utils.config import Config
 
@@ -37,6 +37,8 @@ class Admin(commands.Cog):
             <field> The setting you want to modify, available fields are: prefix, mod_role, admin_role, automod_role.
             <new_setting> What you want your setting to be changed to.
         """
+
+        helpers.change_variable_type(new_setting)
 
         if await checks.is_admin(ctx):
             self.bot.mongo_client.db.guilds.update_one({"_id": ctx.guild.id}, {"$set": {field: new_setting}})

@@ -35,6 +35,10 @@ class RoEmbed(discord.Embed):
                 url=static.GitHubRepo,
             )
 
+    def add_fields(self, *fields: Tuple[str, str]):
+        for name, value in fields:
+            self.add_field(name=name, value=value, inline=True)
+
 
 class ErrorEmbed(discord.Embed):
     def __init__(self, ctx: commands.Context, title: str, colour=static.ColorEmbedError, **kwargs):
@@ -45,28 +49,12 @@ class ErrorEmbed(discord.Embed):
         self.description = kwargs.get("description")
 
         self.set_footer(
-            text="Saz4nd0ra/Ro-discord-bot",
-            icon_url="https://cdn3.iconfinder.com/data/icons/popular-services-brands/512/github-512.png",
+            text=static.GitHubRepoShort,
+            icon_url=static.GitHubIcon,
         )
 
-        if kwargs.get("image"):
-            self.set_image(url=kwargs.get("image"))
-
-        if kwargs.get("thumbnail"):
-            self.set_thumbnail(url=kwargs.get("thumbnail"))
-
-        if kwargs.get("url"):
-            self.set_author(
-                name=title, icon_url=ctx.author.avatar_url, url=kwargs.get("url")
-            )
-        else:
-            self.set_author(
-                name=title,
-                icon_url=ctx.author.avatar_url,
-                url="https://github.com/Saz4nd0ra/Ro-discord-bot",
-            )
-
-def add_fields(embed: discord.Embed, *fields: Tuple[str, str]) -> discord.Embed:
-    for name, value in fields:
-        embed.add_field(name=name, value=value, inline=True)
-    return embed
+        self.set_author(
+            name=title,
+            icon_url=ctx.author.avatar_url,
+            url=static.GitHubRepo,
+        )
