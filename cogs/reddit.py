@@ -4,7 +4,7 @@ import humanize
 import datetime
 from discord.ext import commands
 from .utils import checks, exceptions
-from .utils.embed import Embed
+from .utils.embed import RoEmbed
 from .utils.api import RedditAPI
 from .utils.config import Config
 from .utils.db import Connect
@@ -41,11 +41,11 @@ class Reddit(commands.Cog):
         date = humanize.naturaldate(datetime.datetime.fromtimestamp(user.created_utc))  
 
         if getattr(user, "is_suspended", False):
-            embed = Embed(
+            embed = RoEmbed(
                 ctx, title=f"u/{user.name}", description="This user is suspended."
             )
         else:
-            embed = Embed(
+            embed = RoEmbed(
                 ctx,
                 title=f"u/{user.name}",
                 thumbnail=user.icon_img,

@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import asyncio
-from .utils.embed import Embed
+from .utils.embed import RoEmbed
 from collections import Counter
 from .utils import checks
 import shlex

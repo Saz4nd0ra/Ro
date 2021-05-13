@@ -18,7 +18,7 @@ import subprocess
 from contextlib import redirect_stdout
 from discord.ext import commands
 from .utils import checks
-from .utils.embed import Embed
+from .utils.embed import RoEmbed
 from .utils.exceptions import *
 
 log = logging.getLogger("cogs.devcog")

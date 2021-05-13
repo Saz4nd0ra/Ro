@@ -1,7 +1,7 @@
 from discord.ext import commands
 import aiohttp
 from .utils import checks, exceptions
-from .utils.embed import Embed
+from .utils.embed import RoEmbed
 from .utils.config import Config
 from .utils.api import Rule34API, SauceNaoAPI
 from .utils.db import Connect

@@ -6,7 +6,7 @@ import rule34
 from discord.ext import commands
 from saucenao_api import SauceNao
 from .db import Connect
-from .embed import Embed
+from .embed import RoEmbed
 from . import exceptions
 
 
@@ -77,7 +77,7 @@ class RedditAPI:
         if VIDEO_URL in submission.url:
             if hasattr(submission, "preview"):
                 preview_image_link = submission.preview["images"][0]["source"]["url"]
-                embed = Embed(
+                embed = RoEmbed(
                     ctx,
                     title=submission.title,
                     thumbnail=preview_image_link,
@@ -85,21 +85,21 @@ class RedditAPI:
                 )
             else:
                 preview_image_link = "https://imgur.com/MKnguLq.png"
-            embed = Embed(
+            embed = RoEmbed(
                 ctx,
                 title=submission.title,
                 thumbnail=preview_image_link,
                 url=submission.shortlink,
             )
         elif IMAGE_URL in submission.url:
-            embed = Embed(
+            embed = RoEmbed(
                 ctx,
                 title=submission.title,
                 image=submission.url,
                 url=submission.shortlink,
             )
         else:
-            embed = Embed(ctx, title=submission.title, url=submission.shortlink)
+            embed = RoEmbed(ctx, title=submission.title, url=submission.shortlink)
             embed.add_field(
                 name="Text:",
                 value=submission.selftext
@@ -125,13 +125,13 @@ class Rule34API:
 
     async def build_embed(self, ctx, file):
         if any(x in file.file_url for x in VIDEO_FORMATS):
-            embed = Embed(
+            embed = RoEmbed(
                 ctx,
                 title="Video found",
                 thumbnail=file.preview_url
             )
         else:
-            embed = Embed(
+            embed = RoEmbed(
                 ctx,
                 title="Image found.",
                 image=file.file_url
@@ -173,7 +173,7 @@ class SauceNaoAPI:
         if (result := self.get_sauce_from_file(file)) is None:
             return await ctx.error("No sources found.")
         
-        embed = Embed(ctx, title="Sauce found.", image=image_url)
+        embed = RoEmbed(ctx, title="Sauce found.", image=image_url)
         embed.add_fields(("Author:", f"{result.author}"),
                          ("Similarity:", f"{round(result.similarity)}%"),
                          ("Link:", f"[Click here!]({result.urls[0]})"))

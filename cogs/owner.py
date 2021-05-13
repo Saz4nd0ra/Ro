@@ -5,7 +5,7 @@ import asyncio
 from discord.ext import commands
 from .utils import checks, exceptions
 from .utils.context import Context
-from .utils.embed import Embed
+from .utils.embed import RoEmbed
 
 log = logging.getLogger(__name__)
 

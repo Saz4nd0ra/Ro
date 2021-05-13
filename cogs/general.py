@@ -1,7 +1,7 @@
 import logging
 import discord
 from discord.ext import commands, menus
-from .utils.embed import Embed
+from .utils.embed import RoEmbed
 from .utils.config import Config
 from .utils.paginator import ADBPages
 from .utils.db import Connect
@@ -257,7 +257,7 @@ class General(commands.Cog):
         """Get a users avatar."""
         user = user or ctx.author
         avatar = user.avatar_url_as(static_format='png')
-        embed = Embed(ctx, title=f"Avatar from {user.name}", image=avatar)
+        embed = RoEmbed(ctx, title=f"Avatar from {user.name}", image=avatar)
         await ctx.send(embed=embed)
 
     @commands.command(name="user")
@@ -277,7 +277,7 @@ class General(commands.Cog):
             else "None"
         )
 
-        embed = Embed(ctx, title=f"User: {user.name}", thumbnail=user.avatar_url)
+        embed = RoEmbed(ctx, title=f"User: {user.name}", thumbnail=user.avatar_url)
 
         if hasattr(user, "nick"):
             nick = user.nick
@@ -328,7 +328,7 @@ class General(commands.Cog):
 
         member_by_status = Counter(str(m.status) for m in guild.members)
 
-        embed = Embed(
+        embed = RoEmbed(
             ctx,
             title=guild.name,
             description=f"**ID**: {guild.id}\n**Owner**: {guild.owner}",

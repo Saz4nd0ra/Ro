@@ -9,7 +9,7 @@ import re
 import spotipy
 from enum import Enum
 from spotipy.oauth2 import SpotifyClientCredentials
-from .utils.embed import Embed
+from .utils.embed import RoEmbed
 from .utils.context import Context
 from .utils.config import Config
 from .utils import exceptions
@@ -203,7 +203,7 @@ class Player(wavelink.Player):
                 track = Track(track.id, track.info, requester=ctx.author)
                 queue.append(track)
                 self.queue.add(track)
-            embed = Embed(
+            embed = RoEmbed(
                 ctx,
                 title="Playlist added to queue",
                 description=f"Added {len(queue)} tracks to the queue.",
@@ -215,7 +215,7 @@ class Player(wavelink.Player):
             track = Track(tracks[0].id, tracks[0].info, requester=ctx.author)
             self.queue.add(track)
             if self.queue.length == 0:
-                embed = Embed(
+                embed = RoEmbed(
                     ctx,
                     title="Song added to queue",
                     description=f"Now playing [{track.title}]({track.uri})",
@@ -223,7 +223,7 @@ class Player(wavelink.Player):
                 )
                 await ctx.send(embed=embed)
             else:
-                embed = Embed(
+                embed = RoEmbed(
                     ctx,
                     title="Song added to queue",
                     description=f"Added [{track.title}]({track.uri}) to the queue.",
@@ -235,7 +235,7 @@ class Player(wavelink.Player):
             await self.start_playback()
 
     async def search_tracks(self, ctx: commands.Context, tracks: list):
-        embed = Embed(
+        embed = RoEmbed(
             ctx,
             title=f"Search for music",
             description=(
@@ -337,7 +337,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
                 playlist_length - 1
                 continue
 
-        embed = Embed(
+        embed = RoEmbed(
             ctx,
             title="Playlist added to queue",
             description=f"Added {playlist_length} tracks to the queue.",
@@ -554,7 +554,7 @@ class Music(commands.Cog, wavelink.WavelinkMixin):
                 f"{i + 1}. [{titles[i]}]({uris[i]}) | Requested by: {requester[i]}\n\n"
             )
 
-        embed = Embed(
+        embed = RoEmbed(
             ctx,
             title=f"Queue for {ctx.channel.name}",
             description="**Now Playing:**\n\n"

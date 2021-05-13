@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from .utils.embed import Embed
+from .utils.embed import RoEmbed
 import logging
 from typing import Union
 from .utils import checks, exceptions

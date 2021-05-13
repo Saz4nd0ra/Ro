@@ -1,6 +1,6 @@
 from .utils.context import Context
 from discord.ext import commands
-from .utils.embed import Embed
+from .utils.embed import RoEmbed
 import discord
 import logging
 from .utils.config import Config
