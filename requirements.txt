@@ -1,13 +1,10 @@
 humanize
 git+https://github.com/Rapptz/discord-ext-menus.git
 discord.py
-PyNaCl
 pygit2
 asyncpraw
-wavelink
 aiohttp
 click
-spotipy
 pymongo
 dnspython
 rule34

@@ -1,11 +1,9 @@
 from discord.ext import commands
 import aiohttp
-from .utils import checks, exceptions
-from .utils.embed import Embed
+from .utils import checks
+from .utils.embed import RoEmbed
 from .utils.config import Config
 from .utils.api import Rule34API, SauceNaoAPI
-from .utils.db import Connect
-from .utils.exceptions import *
 
 
 class NSFW(commands.Cog):
@@ -22,11 +20,11 @@ class NSFW(commands.Cog):
         """Manage your r34 tags."""
         if ctx.invoked_subcommand == None:
             try:
-                current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
+                current_tags = self.bot.mongo_client.db.users.find_one({"_id": ctx.author.id})["r34_tags"]
             except:
-                Connect.generate_document(db_name="users",document_id=ctx.author.id)
+                self.bot.mongo_client.generate_user_config(ctx.author.id)
             finally:
-                current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
+                current_tags = self.bot.mongo_client.db.users.find_one({"_id": ctx.author.id})["r34_tags"]
 
             await ctx.author.send(f"Your current tags are: {current_tags}")
     
@@ -34,11 +32,11 @@ class NSFW(commands.Cog):
     async def r34tags_add_command(self, ctx: commands.Context, *, tag: str):
         """Add a tag to your personal tags.
         FYI: blacklisting a tag works by adding a "-" to the tag, for example: -tag1 -tag2."""
-        current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
+        current_tags = self.bot.mongo_client.db.users.find_one({"_id": ctx.author.id})["r34_tags"]
         new_tags = current_tags + tag + " "
-        Connect.update_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags", new_setting=new_tags.replace("  ", " "))
+        self.bot.mongo_client.db.users.update_one({"_id": ctx.author.id}, {"$set": {"r34_tags": new_tags.replace("  ", " ")}})
 
-        current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
+        current_tags = self.bot.mongo_client.db.users.find_one({"_id": ctx.author.id})["r34_tags"]
 
         await ctx.author.send(f"Your current tags are: {current_tags}")
         await ctx.embed("\N{OK HAND SIGN}")
@@ -47,11 +45,11 @@ class NSFW(commands.Cog):
     async def r34tags_remove_command(self, ctx: commands.Context, *, tag: str):
         """Remove a tag from your personal tags.
         FYI: blacklisting a tag works by adding a "-" to the tag, for example: -tag1 -tag2."""
-        current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
+        current_tags = self.bot.mongo_client.db.users.find_one({"_id": ctx.author.id})["r34_tags"]
         new_tags = current_tags.replace(tag, "")
-        Connect.update_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags", new_setting=new_tags.replace("  ", " "))
+        self.bot.mongo_client.db.users.update_one({"_id": ctx.author.id}, {"$set": {"r34_tags": new_tags.replace("  ", " ")}})
 
-        current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
+        current_tags = self.bot.mongo_client.db.users.find_one({"_id": ctx.author.id})["r34_tags"]
 
         await ctx.author.send(f"Your current tags are: {current_tags}")
         await ctx.embed("\N{OK HAND SIGN}")
@@ -59,8 +57,8 @@ class NSFW(commands.Cog):
     @r34tags_command.command(name="clear")
     async def r34tags_clear_command(self, ctx: commands.Context):
         """Clear your current r34tags."""
-        Connect.update_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags", new_setting="")
-        current_tags = Connect.get_field_value(db_name="users",document_id=ctx.author.id,field="r34_tags")
+        self.bot.mongo_client.db.users.update_one({"_id": ctx.author.id}, {"$set": {"r34_tags": ""}})
+        current_tags = self.bot.mongo_client.db.users.find_one({"_id": ctx.author.id})["r34_tags"]
 
         await ctx.author.send(f"Your current tags are: {current_tags}")
         await ctx.embed("\N{OK HAND SIGN}")

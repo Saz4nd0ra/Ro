@@ -1,39 +1,40 @@
+from typing import Coroutine
 from pymongo import MongoClient
-from .config import Config
-from . import exceptions
-from typing import Union
-import dns
 import logging
-import distutils
 import logging
 
 log = logging.getLogger("utils.db")
-
-config = Config()
-mongo_url = config.mongodb_url
-
-client = MongoClient(mongo_url)
-db = client.adb
 
 DEFAULT_GUILD_CONFIG = {
     "_id": 0,
     "prefix": ">>",
     "adminrole": 0,
     "modrole": 0,
-    "reddit_embed": True,
-    "automod_role": 0
+    "auto_embed": True,
+    "newmember_role": 0
 }
 
-DEFAULT_USER_CONFIG = {"_id": 0,"r34_tags": "", "reddit_name": "", "twitter_name": "", "steam_name": ""}
-
-DEFAULT_LEVEL_CONFIG = {"_id": 0, "current_xp": 0, "current_level": 0}
+DEFAULT_USER_CONFIG = {"_id": 0,"r34_tags": "", "reddit_name": ""}
 
 
-class Connect(object):
-    @staticmethod
-    def get_db():
-        """Returns our database."""
-        return db
+class RoDBClient():
+    def __init__(self, mango_url: str):
+        self.client = MongoClient(mango_url)
+        self.db = self.client.ro
 
-# TODO make the whole methods cleaner, probably gonna implement multiple classes
 
+    def generate_guild_config(self, guild_id: int) -> Coroutine:
+
+        DEFAULT_GUILD_CONFIG["_id"] = guild_id
+        self.db.guilds.insert_one(DEFAULT_GUILD_CONFIG)
+
+        log.info(f"Config generated.. _id: {guild_id}")
+
+    def generate_user_config(self, user_id: int) -> Coroutine:
+
+        DEFAULT_GUILD_CONFIG["_id"] = user_id
+        self.db.guilds.insert_one(DEFAULT_GUILD_CONFIG)
+
+        log.info(f"Config generated.. _id: {user_id}")
+
+    

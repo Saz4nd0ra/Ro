@@ -1,5 +1,4 @@
 from discord.ext import commands
-from .db import Connect
 import logging
 
 log = logging.getLogger()
@@ -32,7 +31,7 @@ async def is_owner(ctx):
 
 
 async def is_admin(ctx):
-    adminrole_id = Connect.get_field_value(db_name="guilds", document_id=ctx.guild.id, field="adminrole")
+    adminrole_id = ctx.bot.mongo_client.db.guilds.find_one({"_id": ctx.guild.id})["adminrole"]
     if await check_guild_permissions(ctx, perms={"administrator": True}):
         return True
     elif await check_role_id(ctx, role_id=adminrole_id):
@@ -45,7 +44,7 @@ async def is_admin(ctx):
 
 
 async def is_mod(ctx):
-    modrole_id = Connect.get_field_value(db_name="guilds", document_id=ctx.guild.id, field="modrole")
+    modrole_id = ctx.bot.mongo_client.db.guilds.find_one({"_id": ctx.guild.id})["modrole"]
     if await check_guild_permissions(ctx, perms={"manage_guild": True}):
         return True
     elif await check_role_id(ctx, role_id=modrole_id):

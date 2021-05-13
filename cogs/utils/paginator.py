@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands, menus
 from discord.ext.commands import Paginator as CommandPaginator
-from .embed import Embed
+from .embed import RoEmbed
 import asyncio
 
 

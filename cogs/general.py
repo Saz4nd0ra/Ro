@@ -1,13 +1,11 @@
 import logging
 import discord
 from discord.ext import commands, menus
-from .utils.embed import Embed
+from .utils.embed import RoEmbed
 from .utils.config import Config
 from .utils.paginator import ADBPages
-from .utils.db import Connect
 from .utils import helpers
 from collections import Counter
-from .utils.exceptions import *
 import datetime as dt
 import humanize
 import asyncio
@@ -177,10 +175,6 @@ class PaginatedHelpCommand(commands.HelpCommand):
             }
         )
 
-    async def on_help_command_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandInvokeError):
-            await ctx.send(str(error.original))
-
     def get_command_signature(self, command):
         parent = command.full_parent_name
         if len(command.aliases) > 0:
@@ -257,7 +251,7 @@ class General(commands.Cog):
         """Get a users avatar."""
         user = user or ctx.author
         avatar = user.avatar_url_as(static_format='png')
-        embed = Embed(ctx, title=f"Avatar from {user.name}", image=avatar)
+        embed = RoEmbed(ctx, title=f"Avatar from {user.name}", image=avatar)
         await ctx.send(embed=embed)
 
     @commands.command(name="user")
@@ -277,7 +271,7 @@ class General(commands.Cog):
             else "None"
         )
 
-        embed = Embed(ctx, title=f"User: {user.name}", thumbnail=user.avatar_url)
+        embed = RoEmbed(ctx, title=f"User: {user.name}", thumbnail=user.avatar_url)
 
         if hasattr(user, "nick"):
             nick = user.nick
@@ -328,7 +322,7 @@ class General(commands.Cog):
 
         member_by_status = Counter(str(m.status) for m in guild.members)
 
-        embed = Embed(
+        embed = RoEmbed(
             ctx,
             title=guild.name,
             description=f"**ID**: {guild.id}\n**Owner**: {guild.owner}",
@@ -490,7 +484,7 @@ class General(commands.Cog):
         """Modify your user settings for the bot."""
 
         if ctx.invoked_subcommand == None:
-            document = Connect.get_document(db_name="users", document_id=ctx.author.id)
+            document = self.bot.mongo_client.db.guilds.find_one({"_id": ctx.author.id})
 
             fmt = "```json\n" + str(document) + "\n```"
 
@@ -503,11 +497,13 @@ class General(commands.Cog):
 
         **Args**
 
-            <field> The setting you want to modify, available fields are: reddit_name, twitter_name, steam_name.
+            <field> The setting you want to modify, available fields are: reddit_name
             <new_setting> What you want your setting to be changed to.
         """
 
-        Connect.update_field_value(db_name="users",document_id=ctx.author.id,field=field, new_setting=new_setting)
+        helpers.change_variable_type(new_setting)
+
+        self.bot.mongo_client.db.guilds.update_one({"_id": ctx.author.id}, {"$set": {field: new_setting}})
 
         await ctx.embed("\N{OK HAND SIGN}")
         

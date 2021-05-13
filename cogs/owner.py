@@ -3,9 +3,8 @@ import logging
 import aiohttp
 import asyncio
 from discord.ext import commands
-from .utils import checks, exceptions
 from .utils.context import Context
-from .utils.embed import Embed
+from .utils.embed import RoEmbed
 
 log = logging.getLogger(__name__)
 
@@ -44,12 +43,7 @@ class Owner(commands.Cog):
                 await ctx.bot.user.edit(avatar=data)
                 await ctx.embed("\N{OK HAND SIGN}")
             except:
-                raise exceptions.DiscordAPIError
-
-    @change_avatar_command.error
-    async def change_avatar_command_error(self, ctx: commands.Context, exc):
-        if isinstance(exc, exceptions.DiscordAPIError):
-            await ctx.error("Something went wrong. Try again but be careful to not exceed the limit.")
+                raise discord.errors.ClientException
 
     @change_command.command(name="username")
     async def change_username_command(self, ctx: commands.Context, *, username: str):
@@ -57,18 +51,13 @@ class Owner(commands.Cog):
 
         if await checks.is_owner(ctx):
             if len(username) > 32:
-                raise exceptions.UserError
+                raise discord.errors.ClientException
             
             try:
                 await self.bot.user.edit(username=username)
                 await ctx.embed("\N{OK HAND SIGN}")
             except asyncio.TimeoutError:
-                raise exceptions.DiscordAPIError
-
-    @change_username_command.error
-    async def change_username_command_error(self, ctx: commands.Context, exc):
-        if isinstance(exc, exceptions.DiscordAPIError):
-            await ctx.error("Something went wrong. Try again but be careful to not exceed the limit.")
+                raise discord.errors.ClientException
 
     @change_command.command(name="nickname")
     async def change_nickname_command(self, ctx: commands.Context, *, nickname):
@@ -76,20 +65,13 @@ class Owner(commands.Cog):
 
         if await checks.is_owner(ctx):
             if len(nickname) > 32:
-                raise exceptions.UserError
+                raise discord.errors.ClientException
 
             try:
                 await ctx.guild.me.edit(nick=nickname)
                 await ctx.embed("\N{OK HAND SIGN}")
             except discord.Forbidden:
-                raise exceptions.DiscordAPIError
-
-    @change_nickname_command.error
-    async def change_nickname_command_error(self, ctx: commands.Context, exc):
-        if isinstance(exc, exceptions.UserError):
-            await ctx.error("Something went wrong. Try again but be careful to not exceed the limit.")
-        elif isinstance(exc, exceptions.DiscordAPIError):
-            await ctx.error("Something went wrong. Are you sure that I have permission to do that?")
+                raise discord.errors.ClientException
 
 def setup(bot):
     bot.add_cog(Owner(bot))

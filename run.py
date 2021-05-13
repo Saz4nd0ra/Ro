@@ -89,7 +89,6 @@ def run_bot():
 @click.group(invoke_without_command=True, options_metavar="[options]")
 @click.pass_context
 def main(ctx):
-    """Launches the bot."""
     if ctx.invoked_subcommand is None:
         setup_folders()
         loop = asyncio.get_event_loop()

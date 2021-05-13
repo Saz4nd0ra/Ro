@@ -1,12 +1,12 @@
+from os import stat
 from .utils.context import Context
 from discord.ext import commands
-from .utils.embed import Embed
 import discord
 import logging
 from .utils.config import Config
+from .utils.db import RoDBClient
 from .utils.api import RedditAPI
-from .utils.db import Connect
-from .utils.exceptions import *
+from .utils import static
 
 log = logging.getLogger("cogs.automod")
 
@@ -23,6 +23,8 @@ class AutoMod(commands.Cog):
         self.bot = bot
         self.config = Config()
         self.reddit = RedditAPI()
+        self.mongo_client = RoDBClient(self.config.mongodb_url)
+
 
     def generate_configs(self, guild):
         """Generates all necessary configs upon joining a guild."""
@@ -34,7 +36,7 @@ class AutoMod(commands.Cog):
         ctx = await self.bot.get_context(message, cls=Context)
         if message.guild is not None:
             if any(x in message.content for x in REDDIT_DOMAINS) and not message.content.startswith(str(ctx.prefix)) and not "/rpan/" in message.content:
-                if Connect.get_field_value(db_name="guilds", document_id=ctx.guild.id, field="reddit_embed") == True:
+                if self.mongo_client.db.guilds.find_one({"_id": message.guild.id})["auto_embed"] == True:
                     reddit_url = message.content
                     submission = await self.reddit.get_submission_from_url(reddit_url)
                     if submission.over_18 and not message.channel.is_nsfw():
@@ -52,10 +54,10 @@ class AutoMod(commands.Cog):
     async def on_guild_join(self, guild):
 
         try:
-            Connect.generate_document(db_name="guilds",document_id=guild.id)
+            self.mongo_client.generate_guild_config(guild.id)
         except:
             pass
-        prefix = Connect.get_field_value(db_name="guilds", document_id=guild.id, field="prefix")
+        prefix = self.mongo_client.db.guilds.find_one({"_id": guild.id})["prefix"]
 
         embed = discord.Embed(
             description=f"Your current Server prefix is: {prefix}\n"
@@ -69,12 +71,12 @@ class AutoMod(commands.Cog):
         )
         embed.set_footer(
             text="Saz4nd0ra/Ro-discord-bot",
-            icon_url="https://cdn3.iconfinder.com/data/icons/popular-services-brands/512/github-512.png",
+            icon_url=static.GitHubIcon,
         )
         embed.set_author(
             name="Obligatory Welcome Message | Thanks for inviting me!",
-            icon_url=self.bot.user.avatar_url,
-            url="https://github.com/Saz4nd0ra/Ro-discord-bot",
+            icon_url=static.AppIcon,
+            url=static.GitHubRepo,
         )
         for i in range(0, len(guild.text_channels)):
             try:
@@ -87,7 +89,7 @@ class AutoMod(commands.Cog):
     async def on_member_join(self, member):
 
         try:
-            role_id = Connect.get_field_value(db_name="guilds", document_id=member.guild.id, field="automod_role")
+            role_id = self.mongo_client.db.guilds.find_one({"_id": member.guild.id})["newmember_role"]
         except:
             log.error("Error in guild config, either guild config isn't available or there is an error withing the bot.")
 
