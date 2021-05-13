@@ -1,10 +1,8 @@
 import discord
 from discord.ext import commands
-from .utils.embed import RoEmbed
 import logging
 from typing import Union
 from .utils import checks, exceptions
-from .utils.db import Connect
 from .utils.context import Context
 from .utils.config import Config
 
@@ -23,7 +21,7 @@ class Admin(commands.Cog):
         """Prints the config for the current guild. Sends to the author in private messages."""
 
         if await checks.is_admin(ctx):
-            document = Connect.get_document(db_name="guilds", document_id=ctx.guild.id)
+            document = self.bot.mongo_client.db.guilds.find_one({"_id": ctx.guild.id})
 
             fmt = "```json\n" + str(document) + "\n```"
 
@@ -41,56 +39,28 @@ class Admin(commands.Cog):
         """
 
         if await checks.is_admin(ctx):
-            try:
-                Connect.update_field_value(
-                    db_name="guilds", document_id=ctx.guild.id, field=field, new_setting=new_setting
-                )
-                await ctx.embed(f"Config updated for {ctx.guild.id}.")
-            except exceptions.MongoError:
-                raise exceptions.MongoError
+            self.bot.mongo_client.db.guilds.update_one({"_id": ctx.guild.id}, {"$set": {field: new_setting}})
+            await ctx.embed(f"Config updated for {ctx.guild.id}.")
+            
 
-    @edit_config_command.error
-    async def edit_config_command_error(self, ctx: commands.Context, exc):
-        if isinstance(exc, exceptions.MongoError):
-            await ctx.error(
-                "Please check if you typed in the correct setting that you want to edit."
-            )
 
-    @commands.command(name="drop_config")
+    @commands.command(name="delete_config")
     async def delete_config_command(self, ctx: commands.Context):
         """Drop (delete) the guild config."""
 
         if await checks.is_admin(ctx):
-            try:
-                Connect.delete_document(db_name="guilds",document_id=ctx.guild.id)
-                await ctx.embed(f"Deleted config for {ctx.guild.id}")
-            except Exception:
-                raise exceptions.GuildConfigError
-
-    @delete_config_command.error
-    async def delete_config_command_error(self, ctx: commands.Context, exc):
-        if isinstance(exc, exceptions.GuildConfigError):
-            await ctx.error(
-                "Something went wrong during deletion. Does the config even exist?"
-            )
+            self.bot.mongo_client.db.guilds.delete_one({"_id": ctx.guild.id})
+            await ctx.embed(f"Deleted config for {ctx.guild.id}")
+        
 
     @commands.command(name="gen_config")
     async def gen_config_command(self, ctx: commands.Context):
         """Generates a new config for the guild."""
 
         if await checks.is_admin(ctx):
-            try:
-                Connect.generate_document(db_name="guilds", document_id=ctx.guild.id)
-                await ctx.embed(f"Config generated for {ctx.guild.id}.")
-            except Exception:
-                raise exceptions.GuildConfigError
-
-    @gen_config_command.error
-    async def gen_config_command_error(self, ctx: commands.Context, exc):
-        if isinstance(exc, exceptions.GuildConfigError):
-            await ctx.error(
-                "Something went wrong when generating the config. Does the config already exist?"
-            )
+            
+            self.bot.mongo_client.generate_guild_config(ctx.guild.id)
+            await ctx.embed(f"Config generated for {ctx.guild.id}.")
 
     @commands.command(name="gen_users_config")
     async def gen_users_config_command(self, ctx: commands.Context):
@@ -99,7 +69,7 @@ class Admin(commands.Cog):
         if await checks.is_admin(ctx):
             async for member in ctx.guild.fetch_members():
                 try:
-                    Connect.generate_document(db_name="users", document_id=member.id)
+                    self.bot.mongo_client.generate_users_config(member.id)
                     log.info(f"Config generated for {member.id}|{member.name}.")
                 except:
                     log.warn(

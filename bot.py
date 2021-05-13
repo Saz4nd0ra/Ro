@@ -1,7 +1,11 @@
+from time import monotonic
+from typing import final
 from discord.ext import commands
 import discord
-from cogs.utils import context
-from cogs.utils.config import Config
+from pymongo import mongo_client
+from .cogs.utils.context import Context
+from .cogs.utils.config import Config
+from .cogs.utils.db import RoDBClient
 import datetime
 import json
 import os
@@ -30,6 +34,8 @@ log = logging.getLogger(__name__)
 
 config = Config()
 
+mongo_client = RoDBClient(config.mongodb_url)
+
 initial_extensions = (
     "cogs.general",
     "cogs.mod",
@@ -50,6 +56,12 @@ def call_prefix(bot, msg):
         base.append("!")
     else:
         base.append(config.default_prefix)
+        try:
+            base.append(mongo_client.db.guilds.find_one({"_id": msg.guild.id})["prefix"])
+        except:
+            mongo_client.generate_guild_config(msg.guild.id)
+        finally:
+            base.append(mongo_client.db.guilds.find_one({"_id": msg.guild.id})["prefix"])
     return base
 
 
@@ -80,6 +92,7 @@ class Ro(commands.AutoShardedBot):
 
         self.config = config
         self.session = aiohttp.ClientSession(loop=self.loop)
+        self.mongo_client = RoDBClient(config.mongodb_url)
 
         self._prev_events = deque(maxlen=10)
 
@@ -150,7 +163,7 @@ class Ro(commands.AutoShardedBot):
     def run(self):
         super().run(self.config.login_token, reconnect=True)
 
-
+"""
 class RemoveNoise(logging.Filter):
     def __init__(self):
         super().__init__(name="discord.state")
@@ -218,7 +231,6 @@ def run_bot():
 @click.group(invoke_without_command=True, options_metavar="[options]")
 @click.pass_context
 def main(ctx):
-    """Launches the bot."""
     if ctx.invoked_subcommand is None:
         setup_folders()
         loop = asyncio.get_event_loop()
@@ -230,3 +242,4 @@ def main(ctx):
 if __name__ == "__main__":
     main()
 
+"""

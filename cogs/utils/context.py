@@ -37,6 +37,11 @@ class Context(commands.Context):
         else:
             return await self.send(content)
 
-    async def respond_embed(self, embed: discord.Embed):
-        """Sends an embed."""
-        await self.send(embed=embed)
+    async def embed(self, message: str):
+            """Sends a quick embed."""
+            embed = RoEmbed(
+                ctx=self,
+                title=f"{self.prefix}{self.command.qualified_name}",
+                description=message,
+            )
+            await self.send(embed=embed)
