@@ -1,3 +1,3 @@
-# Ro-discord-bot
+# Ro (deprecated)
 
-Archived. I might rewrite that one later on.
+Rewrite of Ro, is available [here](https://github.com/Saz4nd0ra/Ro2) 
